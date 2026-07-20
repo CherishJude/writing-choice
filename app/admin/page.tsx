@@ -139,17 +139,27 @@ export default function AdminPage() {
       alert('Please fill in both subject and message fields.');
       return;
     }
-    setBroadcastStatus('Sending...');
+    setBroadcastStatus('Sending announcement...');
     try {
-      const res = await fetch('/api/broadcast', {
+      let res = await fetch('/api/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject: broadcastSubject, message: broadcastMessage }),
       });
+
+      if (!res.ok) {
+        // Fallback to trends endpoint if needed
+        res = await fetch('/api/trends/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject: broadcastSubject, message: broadcastMessage, trendTopic: 'Broadcast Announcement' }),
+        });
+      }
+
       const data = await res.json();
-      setBroadcastStatus(data.success ? `✅ Broadcast sent to ${data.count || 0} users!` : `❌ Error sending update`);
-    } catch (err) {
-      setBroadcastStatus('❌ Network error sending broadcast');
+      setBroadcastStatus(data.success ? `✅ Broadcast sent to ${data.count || data.recipientCount || 1} members!` : `❌ Error: ${data.error}`);
+    } catch (err: any) {
+      setBroadcastStatus('❌ Error sending broadcast update. Please try again.');
     }
   };
 
@@ -467,20 +477,61 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* SECTION 4: AUTOMATED TREND EMAIL PUSH SYSTEM (SUPER ADMIN & MODERATORS) */}
+        {/* SECTION 4: AUTOMATED ADAPTIVE TREND EMAIL PUSH SYSTEM */}
         {(userRole === 'super_admin' || userRole === 'moderator') && (
           <div style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0, color: isDark ? '#fff' : '#0f172a' }}>
-                🔥 Automatic Trend Email Push System
+                🔥 Adaptive Real-Time Trend Email Push
               </h2>
-              <span style={{ fontSize: '0.75rem', color: '#25d366', fontWeight: '800' }}>
-                ⚡ Auto Member Push
-              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/trends/notify');
+                    const data = await res.json();
+                    if (data.trends) setDynamicTrends(data.trends);
+                  }}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    background: 'rgba(0, 242, 254, 0.15)',
+                    color: accentColor,
+                    border: `1px solid ${accentColor}`,
+                    fontSize: '0.75rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🔄 Refresh Live Trends
+                </button>
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/trends/notify?action=generate');
+                    const data = await res.json();
+                    if (data.trend) {
+                      setDynamicTrends(prev => [data.trend, ...prev]);
+                      setBroadcastSubject(data.trend.subject);
+                      setBroadcastMessage(data.trend.message);
+                    }
+                  }}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    background: 'rgba(37,211,102,0.15)',
+                    color: '#25d366',
+                    border: '1px solid #25d366',
+                    fontSize: '0.75rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⚡ Auto-Generate New Trend
+                </button>
+              </div>
             </div>
 
             <p style={{ fontSize: '0.88rem', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '16px' }}>
-              Send automated trend email push notifications to all registered members based on breaking global trends (e.g. World Cup finals, academic deadlines, AI research developments).
+              Send automated trend email push notifications to all registered members. Live trends dynamically update based on current breaking global events (sports, academic deadlines, AI research updates).
             </p>
 
             {/* Dynamic Real-Time Trend Preset Buttons */}
@@ -511,21 +562,12 @@ export default function AdminPage() {
                 <>
                   <button
                     onClick={() => {
-                      setBroadcastSubject('⚽ World Cup Finals & Global Championship Alert!');
+                      setBroadcastSubject('⚽ Live Global Sports & World Cup Alert!');
                       setBroadcastMessage('The World Cup Finals are happening live! Enjoy 20% off all essay and dissertation orders today so you can watch the game stress-free while Cherish Jude handles your academic writing.');
                     }}
                     style={{ padding: '8px 14px', borderRadius: '20px', background: 'rgba(37,211,102,0.15)', color: '#25d366', border: '1px solid #25d366', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
                   >
                     ⚽ World Cup Finals
-                  </button>
-                  <button
-                    onClick={() => {
-                      setBroadcastSubject('🎓 Exam Season & Final Year Project Rush: Get 100% Turnitin Guaranteed Help!');
-                      setBroadcastMessage('Dear Student, Exam season and dissertation deadlines are approaching fast. Choose your research tier today on WritingChoice and let our vetted experts handle your project with Turnitin proof.');
-                    }}
-                    style={{ padding: '8px 14px', borderRadius: '20px', background: `rgba(0, 242, 254, 0.15)`, color: accentColor, border: `1px solid ${accentColor}`, fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
-                  >
-                    🎓 Academic Rush
                   </button>
                 </>
               )}
