@@ -24,6 +24,8 @@ export default function AdminPage() {
   const [isDark, setIsDark] = useState(true);
   const [accentColor, setAccentColor] = useState('#00f2fe');
 
+  const [dynamicTrends, setDynamicTrends] = useState<any[]>([]);
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('writingchoice_theme');
     setIsDark(savedTheme !== 'light');
@@ -35,6 +37,14 @@ export default function AdminPage() {
       mint: '#98fb98', silver: '#c0c8d0',
     };
     setAccentColor(savedAccent && accentColors[savedAccent] ? accentColors[savedAccent] : '#00f2fe');
+
+    // Fetch dynamic trends from API
+    fetch('/api/trends/notify')
+      .then(res => res.json())
+      .then(data => {
+        if (data.trends) setDynamicTrends(data.trends);
+      })
+      .catch(err => console.warn('Dynamic trends error:', err));
   }, []);
 
   const loadData = async () => {
@@ -473,37 +483,52 @@ export default function AdminPage() {
               Send automated trend email push notifications to all registered members based on breaking global trends (e.g. World Cup finals, academic deadlines, AI research developments).
             </p>
 
-            {/* Quick Trend Preset Buttons */}
+            {/* Dynamic Real-Time Trend Preset Buttons */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-              <button
-                onClick={() => {
-                  setBroadcastSubject('⚽ World Cup Finals: Who will win the trophy? Share your predictions!');
-                  setBroadcastMessage('Hey WritingChoice member! The World Cup Finals are here! Join our #Entertainment group chat right now to discuss who will take the trophy and react with emojis.');
-                }}
-                style={{ padding: '8px 14px', borderRadius: '20px', background: 'rgba(37,211,102,0.15)', color: '#25d366', border: '1px solid #25d366', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
-              >
-                ⚽ World Cup Finals Preset
-              </button>
-
-              <button
-                onClick={() => {
-                  setBroadcastSubject('🎓 Exam Season & Final Year Project Rush: Get 100% Turnitin Guaranteed Help!');
-                  setBroadcastMessage('Dear Student, Exam season and dissertation deadlines are approaching fast. Choose your research tier today on WritingChoice and let our vetted experts handle your project with Turnitin proof.');
-                }}
-                style={{ padding: '8px 14px', borderRadius: '20px', background: `rgba(0, 242, 254, 0.15)`, color: accentColor, border: `1px solid ${accentColor}`, fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
-              >
-                🎓 Academic Deadline Rush
-              </button>
-
-              <button
-                onClick={() => {
-                  setBroadcastSubject('💡 New AI Trends in Academic Research: How to stay 100% human-written');
-                  setBroadcastMessage('Important update: Universities are raising Turnitin AI detection sensitivity. Learn how WritingChoice guarantees 100% human-crafted research papers without AI flagging.');
-                }}
-                style={{ padding: '8px 14px', borderRadius: '20px', background: 'rgba(255,191,0,0.15)', color: '#ffbf00', border: '1px solid #ffbf00', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
-              >
-                💡 AI Research Trends
-              </button>
+              {dynamicTrends.length > 0 ? (
+                dynamicTrends.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setBroadcastSubject(t.subject);
+                      setBroadcastMessage(t.message);
+                    }}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '20px',
+                      background: 'rgba(0, 242, 254, 0.12)',
+                      color: accentColor,
+                      border: `1px solid ${accentColor}`,
+                      fontSize: '0.78rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t.topic}
+                  </button>
+                ))
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setBroadcastSubject('⚽ World Cup Finals & Global Championship Alert!');
+                      setBroadcastMessage('The World Cup Finals are happening live! Enjoy 20% off all essay and dissertation orders today so you can watch the game stress-free while Cherish Jude handles your academic writing.');
+                    }}
+                    style={{ padding: '8px 14px', borderRadius: '20px', background: 'rgba(37,211,102,0.15)', color: '#25d366', border: '1px solid #25d366', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
+                  >
+                    ⚽ World Cup Finals
+                  </button>
+                  <button
+                    onClick={() => {
+                      setBroadcastSubject('🎓 Exam Season & Final Year Project Rush: Get 100% Turnitin Guaranteed Help!');
+                      setBroadcastMessage('Dear Student, Exam season and dissertation deadlines are approaching fast. Choose your research tier today on WritingChoice and let our vetted experts handle your project with Turnitin proof.');
+                    }}
+                    style={{ padding: '8px 14px', borderRadius: '20px', background: `rgba(0, 242, 254, 0.15)`, color: accentColor, border: `1px solid ${accentColor}`, fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer' }}
+                  >
+                    🎓 Academic Rush
+                  </button>
+                </>
+              )}
             </div>
 
             <button

@@ -84,6 +84,9 @@ export default function ChatPage() {
 
     fetchData();
 
+    // 1-second continuous auto-polling interval for instant chat & emoji reaction sync
+    const pollInterval = setInterval(fetchData, 1000);
+
     const msgChannel = supabase
       .channel(`group_messages_${group}`)
       .on('postgres_changes', {
@@ -108,6 +111,7 @@ export default function ChatPage() {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(msgChannel);
       supabase.removeChannel(reactChannel);
     };
@@ -149,13 +153,21 @@ export default function ChatPage() {
   const addReaction = async (messageId: number, reaction: string) => {
     if (!user) return;
 
-    const { error } = await supabase.from('chat_reactions').insert([{
+    // Optimistic UI update so emoji reaction displays IMMEDIATELY without waiting
+    const tempReact = {
+      id: Date.now(),
+      message_id: messageId,
+      user_name: user.email,
+      reaction: reaction
+    };
+    setReactions(prev => [...prev, tempReact]);
+    setShowReactionPicker(null);
+
+    await supabase.from('chat_reactions').insert([{
       message_id: messageId,
       user_name: user.email,
       reaction: reaction
     }]);
-
-    if (!error) setShowReactionPicker(null);
   };
 
   const getReactionsForMessage = (messageId: number) => {
