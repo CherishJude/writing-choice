@@ -1,0 +1,468 @@
+@import "tailwindcss";
+
+/* ==========================================
+   GOOGLE MATERIAL 3 & MICROSOFT FLUENT DESIGN SYSTEM
+   ========================================== */
+
+:root {
+  /* Default Dark Mode Surface System */
+  --bg-primary: #0a0d14;
+  --surface-card: rgba(255, 255, 255, 0.04);
+  --surface-card-hover: rgba(255, 255, 255, 0.08);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --surface-border-hover: rgba(0, 242, 254, 0.4);
+  
+  --text-primary: #f0f0f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --accent-color: #00f2fe;
+  --accent-glow: rgba(0, 242, 254, 0.3);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+
+  --shadow-elevation-1: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-elevation-2: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-accent-glow: 0 0 25px var(--accent-glow);
+}
+
+/* Light Mode Overrides */
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-card-hover: #f1f5f9;
+  --surface-border: rgba(0, 0, 0, 0.12);
+  --surface-border-hover: rgba(0, 150, 255, 0.4);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --shadow-elevation-1: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-elevation-2: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Base resets & High-DPI font stack */
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Card System */
+.glass-card {
+  background: var(--surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevation-1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: var(--surface-card-hover);
+  border-color: var(--surface-border-hover);
+  box-shadow: var(--shadow-elevation-2), var(--shadow-accent-glow);
+}
+
+.glass-pill {
+  background: var(--surface-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Fluid Keyframe Animations */
+@keyframes scrollLed {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Responsive Grid & Edge-to-Edge Mobile Viewport Utilities */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  html, body {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .glass-card {
+    border-radius: 16px !important;
+  }
+}
+
+/* ==========================================
+   EXACT BLOGGER TEMPLATE UI & COMPONENTS
+   ========================================== */
+
+/* Blogger Cool Title Badge */
+.cool-title {
+  display: inline-block;
+  padding: clamp(12px, 3vw, 20px) clamp(24px, 5vw, 50px);
+  border: 4px solid var(--accent-color);
+  border-radius: 60px 10px 60px 10px;
+  box-shadow: 0 0 20px var(--accent-color), inset 0 0 15px var(--surface-border), 0 8px 0 #0a1a0a;
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 0 10px var(--accent-color), 2px 2px 0 #000;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+/* Monospace LED Scanline Ticker Bar */
+.led-bar {
+  background: #000000;
+  border: 2px solid #0a0a0a;
+  padding: 12px 0;
+  width: 100%;
+  max-width: 1000px;
+  margin: 15px auto;
+  border-radius: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px #333, 0 0 15px var(--accent-glow), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  background-image: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 4px), repeating-linear-gradient(90deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 4px);
+}
+
+.led-scroll {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scrollLed 25s linear infinite;
+}
+
+.led-bar:hover .led-scroll {
+  animation-play-state: paused;
+}
+
+.led-text {
+  font-family: 'Courier New', Courier, monospace;
+  color: #c0c8d0;
+  font-weight: bold;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px #c0c8d0, 0 0 10px #c0c8d0;
+  display: inline-block;
+  padding-right: 50px;
+}
+
+/* Exact Blogger Cosmic Quote Card */
+.cosmic-quote-card {
+  position: relative;
+  max-width: 580px;
+  width: 92%;
+  margin: 30px auto;
+  background: rgba(8, 8, 20, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 36px;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.25);
+  text-align: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.quote-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.quote-heading h4 {
+  font-size: clamp(1.3rem, 3.5vw, 1.7rem);
+  font-weight: 800;
+  color: #ffd966;
+  margin: 0;
+  text-shadow: 0 0 8px rgba(255, 217, 102, 0.5);
+}
+
+.quote-text {
+  color: #f3f3f5;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  line-height: 1.65;
+  margin: 12px 0;
+  font-weight: 450;
+  padding: 0 10px;
+}
+
+.quote-glow {
+  width: 70px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffd966, #ffb347, transparent);
+  margin: 16px auto 0 auto;
+  border-radius: 4px;
+}
+
+/* Blogger Menu Dropdown Button & Container */
+.menu-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+}
+
+.menu-btn {
+  background: var(--surface-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+  border-radius: 40px;
+  padding: 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  width: 48px;
+  height: 48px;
+}
+
+.menu-btn:hover {
+  background: var(--accent-color);
+  color: #000;
+  border-color: var(--accent-color);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  background: rgba(10, 13, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 14px;
+  flex-direction: column;
+  min-width: 220px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 6px;
+  z-index: 10000;
+}
+
+.menu-item {
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.menu-item:hover {
+  background: var(--accent-color);
+  color: #000;
+}
+
+/* Swatch Picker UI */
+.theme-selector-container {
+  margin-top: 6px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.theme-swatches {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.swatch:hover {
+  transform: scale(1.2);
+}
+
+.swatch.active-swatch {
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+/* Blogger Slide-In Sidebar Drawer */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 290px;
+  height: 100vh;
+  background: rgba(10, 13, 20, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--surface-border);
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.6);
+  z-index: 40000;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 24px 18px;
+  overflow-y: auto;
+}
+
+.sidebar.show {
+  left: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 39999;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 12px;
+}
+
+.sidebar-header h3 {
+  color: var(--accent-color);
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.sidebar-item {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 12px 16px;
+  text-align: left;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-item:hover {
+  background: var(--accent-color);
+  color: #000;
+}
+
+.sidebar-submenu {
+  margin-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.sidebar-subitem {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-subitem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent-color);
+}
