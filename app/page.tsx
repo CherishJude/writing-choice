@@ -93,24 +93,36 @@ export default function Home() {
       setViewMode(savedViewMode as any);
     }
 
-    const checkUser = async () => {
+        const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
-        if (user.email === 'judecherish23@gmail.com') {
-          setUserRole('super_admin');
-          setDisplayName('Admin (Cherish Jude)');
-        } else {
-          const emailPrefix = user.email ? user.email.split('@')[0] : 'User';
-          const { data: member } = await supabase.from('members').select('role').eq('email', user.email).single();
-          if (member && member.role === 'moderator') {
-            setUserRole('moderator');
-            setDisplayName(`Moderator (${emailPrefix})`);
+        // Fetch member record from the database
+        const { data: member } = await supabase
+          .from('members')
+          .select('role, display_name')
+          .eq('email', user.email)
+          .single();
+
+        const emailPrefix = user.email ? user.email.split('@')[0] : 'User';
+
+        if (member) {
+          // Use the role from the database
+          setUserRole(member.role as 'super_admin' | 'moderator' | 'member');
+
+          // Use the database display_name if available, otherwise build one
+          if (member.display_name) {
+            setDisplayName(member.display_name);
           } else {
-            setUserRole('member');
-            setDisplayName(`Member (${emailPrefix})`);
+            setDisplayName(
+              `${member.role === 'super_admin' ? 'Admin' : member.role === 'moderator' ? 'Moderator' : 'Member'} (${emailPrefix})`
+            );
           }
+        } else {
+          // No member record – default to member
+          setUserRole('member');
+          setDisplayName(`Member (${emailPrefix})`);
         }
       }
     };
@@ -296,11 +308,9 @@ export default function Home() {
               </button>
             )}
 
-            <Link href="/about" onClick={() => setIsMenuOpen(false)}>
-              <button className="menu-item">
-                <span>ℹ️</span> About Platform
-              </button>
-            </Link>
+                        <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/about'); }}>
+              <span>ℹ️</span> About Platform
+            </button>
 
             {user && (
               <button className="menu-item" onClick={handleLogout} style={{ color: '#ef4444' }}>
@@ -343,7 +353,7 @@ export default function Home() {
       }}>
         <div style={{ marginLeft: '60px', fontWeight: '800', fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b' }}>
           {user ? (
-            <span style={{ color: user.email === 'judecherish23@gmail.com' ? '#ef4444' : accentColor }}>
+            <span style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor }}>
               {displayName}
             </span>
           ) : (
@@ -1542,13 +1552,13 @@ export default function Home() {
 
         {/* User Badge & Address Designation */}
         {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', marginBottom: '16px', border: `1px solid ${user.email === 'judecherish23@gmail.com' ? '#ef4444' : accentColor}` }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: user.email === 'judecherish23@gmail.com' ? '#ef4444' : accentColor, color: '#000', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
-              {user.email === 'judecherish23@gmail.com' ? '👑' : user.email?.charAt(0).toUpperCase()}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', marginBottom: '16px', border: `1px solid ${userRole === 'super_admin' ? '#ef4444' : accentColor}` }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: userRole === 'super_admin' ? '#ef4444' : accentColor, color: '#000', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+              {userRole === 'super_admin' ? '👑' : (user.email ? user.email.charAt(0).toUpperCase() : '👤')}
             </div>
             <div>
               <div style={{ fontWeight: '900', fontSize: '0.9rem', color: isDark ? '#fff' : '#000' }}>{displayName}</div>
-              <div style={{ fontSize: '0.72rem', color: user.email === 'judecherish23@gmail.com' ? '#ef4444' : '#ffbf00', fontWeight: '800' }}>
+              <div style={{ fontSize: '0.72rem', color: userRole === 'super_admin' ? '#ef4444' : '#ffbf00', fontWeight: '800' }}>
                 {userRole === 'super_admin' ? 'Super Admin Authority' : userRole === 'moderator' ? 'Appointed Moderator' : 'Verified Member'}
               </div>
             </div>
@@ -1564,25 +1574,19 @@ export default function Home() {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <Link href="/" onClick={() => setIsSidebarOpen(false)}>
-            <button className="sidebar-item">
-              <span>🏠</span> Home Platform
-            </button>
-          </Link>
+                    <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/'); }}>
+            <span>🏠</span> Home Platform
+          </button>
 
-          <Link href="/about" onClick={() => setIsSidebarOpen(false)}>
-            <button className="sidebar-item">
-              <span>👤</span> About WritingChoice
-            </button>
-          </Link>
+          <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/about'); }}>
+            <span>👤</span> About WritingChoice
+          </button>
 
           {user && (
             <>
-              <Link href="/dashboard" onClick={() => setIsSidebarOpen(false)}>
-                <button className="sidebar-item">
-                  <span>📊</span> Member Dashboard
-                </button>
-              </Link>
+                            <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }}>
+                <span>📊</span> Member Dashboard
+              </button>
 
               <button className="sidebar-item" onClick={() => setIsGroupSubmenuOpen(!isGroupSubmenuOpen)}>
                 <span>👥</span> Groups <span style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>{isGroupSubmenuOpen ? '▲' : '▼'}</span>
@@ -1597,21 +1601,17 @@ export default function Home() {
                     { name: 'Entertainment', icon: '🎬' },
                     { name: 'Friends Zone', icon: '🤝' },
                   ].map((grp) => (
-                    <Link key={grp.name} href="/chat" onClick={() => setIsSidebarOpen(false)}>
-                      <button className="sidebar-subitem">
-                        <span>{grp.icon}</span> {grp.name}
-                      </button>
-                    </Link>
+                                        <button key={grp.name} className="sidebar-subitem" onClick={() => { setIsSidebarOpen(false); router.push('/chat'); }}>
+                      <span>{grp.icon}</span> {grp.name}
+                    </button>
                   ))}
                 </div>
               )}
 
               {(userRole === 'super_admin' || userRole === 'moderator') && (
-                <Link href="/admin" onClick={() => setIsSidebarOpen(false)}>
-                  <button className="sidebar-item" style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
-                    <span>🛡️</span> {userRole === 'super_admin' ? 'Super Admin Console' : 'Moderator Console'}
-                  </button>
-                </Link>
+                                <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/admin'); }} style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
+                  <span>🛡️</span> {userRole === 'super_admin' ? 'Super Admin Console' : 'Moderator Console'}
+                </button>
               )}
 
               {/* LOGOUT OPTION RIGHT UNDER ADMIN CONSOLE */}
