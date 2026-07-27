@@ -108,17 +108,18 @@ export default function ChatWidget() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Upgraded glass button style to use CSS variables
   const glassButtonStyle: React.CSSProperties = {
-    background: 'rgba(10, 13, 20, 0.85)',
+    background: 'var(--bg-surface)',
     backdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.18)',
-    color: '#ffffff',
+    border: '1px solid var(--surface-border)',
+    color: 'var(--text-primary)',
     borderRadius: '50px',
     padding: '10px 20px',
     fontWeight: '700',
     cursor: 'pointer',
     fontSize: '0.85rem',
-    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
+    boxShadow: 'var(--shadow-elevation-1)',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -144,7 +145,7 @@ export default function ChatWidget() {
             fontWeight: '800',
             cursor: 'pointer',
             fontSize: '0.9rem',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
+            boxShadow: 'var(--shadow-elevation-1)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -159,7 +160,7 @@ export default function ChatWidget() {
           onClick={openWhatsAppChat}
           style={{
             ...glassButtonStyle,
-            background: 'rgba(37, 211, 102, 0.22)',
+            background: 'rgba(37, 211, 102, 0.1)',
             border: '1px solid #25d366',
             color: '#25d366',
           }}
@@ -175,7 +176,7 @@ export default function ChatWidget() {
           style={glassButtonStyle}
           title="Share WritingChoice"
         >
-          <span style={{ color: '#00f2fe' }}>🔗</span>
+          <span style={{ color: 'var(--accent-color)' }}>🔗</span>
           Share
         </button>
 
@@ -188,35 +189,35 @@ export default function ChatWidget() {
           bottom: '160px',
           right: '0',
           width: '280px',
-          background: 'rgba(10, 13, 20, 0.96)',
+          background: 'var(--bg-surface)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          border: '1px solid var(--surface-border)',
           borderRadius: '20px',
           padding: '16px',
-          boxShadow: '0 12px 35px rgba(0,0,0,0.6)',
+          boxShadow: 'var(--shadow-elevation-2)',
           zIndex: 9999,
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', color: '#00f2fe', fontWeight: '800', fontSize: '0.88rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', color: 'var(--accent-color)', fontWeight: '800', fontSize: '0.88rem' }}>
             <span>🔗 Share WritingChoice</span>
-            <button onClick={() => setShowShareModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowShareModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
               onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent('Check out WritingChoice for 100% human academic research & dissertations: ' + window.location.origin)}`, '_blank')}
-              style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(37,211,102,0.15)', color: '#25d366', border: '1px solid #25d366', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
+              style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(37,211,102,0.1)', color: '#25d366', border: '1px solid #25d366', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
             >
               💬 Share via WhatsApp
             </button>
             <button
               onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out WritingChoice for academic research: ' + window.location.origin)}`, '_blank')}
-              style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(0,242,254,0.15)', color: '#00f2fe', border: '1px solid #00f2fe', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
+              style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(0,242,254,0.1)', color: 'var(--accent-color)', border: '1px solid var(--accent-color)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
             >
               🐦 Share on Twitter / X
             </button>
             <button
               onClick={copyPlatformLink}
-              style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
+              style={{ padding: '8px 12px', borderRadius: '10px', background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1px solid var(--surface-border)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left' }}
             >
               📋 {copied ? '✓ Link Copied!' : 'Copy Platform Link'}
             </button>
@@ -234,18 +235,18 @@ export default function ChatWidget() {
           maxWidth: '92vw',
           height: '480px',
           maxHeight: '80vh',
-          background: 'rgba(10, 13, 20, 0.96)',
+          background: 'var(--bg-surface)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          border: '1px solid var(--surface-border)',
           borderRadius: '20px',
           zIndex: 9998,
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6)',
+          boxShadow: 'var(--shadow-elevation-2)',
           overflow: 'hidden',
           animation: 'popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}>
-          {/* WhatsApp Header */}
+          {/* WhatsApp Header (Stays branded green) */}
           <div style={{
             padding: '14px 18px',
             background: 'linear-gradient(135deg, #075E54, #128C7E)',
@@ -288,7 +289,7 @@ export default function ChatWidget() {
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
-            background: 'rgba(0,0,0,0.2)',
+            background: 'var(--bg-primary)',
           }}>
             {messages.map((msg, index) => (
               <div
@@ -296,9 +297,10 @@ export default function ChatWidget() {
                 style={{
                   alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                   background: msg.role === 'user'
-                    ? '#005c4b'
-                    : 'rgba(255,255,255,0.06)',
-                  color: '#ffffff',
+                    ? '#005c4b' // Keep WhatsApp style for user
+                    : 'var(--surface-card)', // Theme-responsive for AI
+                  color: msg.role === 'user' ? '#ffffff' : 'var(--text-primary)',
+                  border: msg.role === 'user' ? 'none' : '1px solid var(--surface-border)',
                   padding: '10px 14px',
                   borderRadius: msg.role === 'user'
                     ? '14px 14px 0 14px'
@@ -307,11 +309,11 @@ export default function ChatWidget() {
                   wordBreak: 'break-word',
                   fontSize: '0.88rem',
                   lineHeight: '1.5',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                 }}
               >
                 {msg.role === 'assistant' && (
-                  <div style={{ fontSize: '0.7rem', color: '#00f2fe', fontWeight: 'bold', marginBottom: '3px' }}>Cherish SI</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--accent-color)', fontWeight: 'bold', marginBottom: '3px' }}>Cherish SI</div>
                 )}
                 {msg.content}
               </div>
@@ -319,8 +321,9 @@ export default function ChatWidget() {
             {loading && (
               <div style={{
                 alignSelf: 'flex-start',
-                background: 'rgba(255,255,255,0.06)',
-                color: '#00f2fe',
+                background: 'var(--surface-card)',
+                color: 'var(--accent-color)',
+                border: '1px solid var(--surface-border)',
                 padding: '10px 14px',
                 borderRadius: '14px 14px 14px 0',
                 maxWidth: '86%',
@@ -336,8 +339,8 @@ export default function ChatWidget() {
           {/* Input Area */}
           <div style={{
             padding: '10px 14px',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(10, 13, 20, 0.95)',
+            borderTop: '1px solid var(--surface-border)',
+            background: 'var(--bg-surface)',
             display: 'flex',
             gap: '8px',
           }}>
@@ -350,9 +353,9 @@ export default function ChatWidget() {
               style={{
                 flex: 1,
                 padding: '10px 14px',
-                background: 'rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#ffffff',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--surface-border)',
+                color: 'var(--text-primary)',
                 borderRadius: '30px',
                 outline: 'none',
                 fontSize: '0.88rem',
@@ -386,9 +389,9 @@ export default function ChatWidget() {
             padding: '4px 12px',
             textAlign: 'center',
             fontSize: '0.68rem',
-            color: '#94a3b8',
-            background: 'rgba(0,0,0,0.5)',
-            borderTop: '1px solid rgba(255,255,255,0.05)',
+            color: 'var(--text-muted)',
+            background: 'var(--bg-surface)',
+            borderTop: '1px solid var(--surface-border)',
           }}>
             Limited to 10 messages per minute
           </div>

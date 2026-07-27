@@ -18,9 +18,11 @@ export default function LoginPage() {
   const [accentColor, setAccentColor] = useState('#00f2fe');
 
   useEffect(() => {
+    // Load saved theme
     const savedTheme = localStorage.getItem('writingchoice_theme');
     setIsDark(savedTheme !== 'light');
 
+    // Load saved accent color
     const savedAccent = localStorage.getItem('user_accent_color');
     const accentColors: { [key: string]: string } = {
       default: '#00f2fe', emerald: '#00ff9d', purple: '#b366ff',
@@ -52,22 +54,16 @@ export default function LoginPage() {
     }
   };
 
-  const cardBg = isDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff';
-  const borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
-
   return (
     <div style={{
       minHeight: '100vh',
-      background: isDark
-        ? 'radial-gradient(ellipse at top, #141c2e 0%, #0a0d14 100%)'
-        : 'radial-gradient(ellipse at top, #eef2ff 0%, #f8fafc 100%)',
-      color: isDark ? '#f8fafc' : '#0f172a',
-      fontFamily: '"Segoe UI", system-ui, sans-serif',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
       padding: '20px',
+      background: 'var(--bg-primary)',
+      color: 'var(--text-primary)',
       position: 'relative',
     }}>
       
@@ -87,37 +83,46 @@ export default function LoginPage() {
         <Link href="/">
           <button style={{
             background: 'transparent',
-            border: `1px solid ${borderColor}`,
-            color: isDark ? '#94a3b8' : '#475569',
+            border: `1px solid var(--surface-border)`,
+            color: 'var(--text-secondary)',
             padding: '8px 18px',
             borderRadius: '30px',
             cursor: 'pointer',
             fontWeight: '700',
             fontSize: '0.85rem',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--accent-color)';
+            e.currentTarget.style.color = 'var(--accent-color)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--surface-border)';
+            e.currentTarget.style.color = 'var(--text-secondary)';
           }}>
             ← Return to Home
           </button>
         </Link>
       </div>
 
-      {/* Auth Card (Google SSO Style) */}
+      {/* Auth Card */}
       <div style={{
-        background: cardBg,
+        background: 'var(--bg-surface)',
         backdropFilter: 'blur(20px)',
-        border: `1px solid ${borderColor}`,
+        border: `1px solid var(--surface-border)`,
         borderRadius: '24px',
         padding: '40px 32px',
         maxWidth: '420px',
         width: '100%',
-        boxShadow: isDark ? '0 20px 50px rgba(0,0,0,0.5)' : '0 20px 50px rgba(0,0,0,0.06)',
+        boxShadow: 'var(--shadow-elevation-2)',
       }}>
         
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h1 style={{ margin: '0 0 6px 0', fontSize: '2rem', fontWeight: '900', letterSpacing: '-0.5px' }}>
             Writing<span style={{ color: accentColor }}>Choice</span>
           </h1>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b' }}>
-            Sign in to access your research workspace.
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            {isLogin ? 'Sign in to access your workspace.' : 'Join WritingChoice today.'}
           </p>
         </div>
 
@@ -128,8 +133,8 @@ export default function LoginPage() {
           borderRadius: '30px',
           padding: '4px',
           marginBottom: '24px',
-          border: `1px solid ${borderColor}`,
-          position: 'relative'
+          border: `1px solid var(--surface-border)`,
+          position: 'relative',
         }}>
           <div style={{
             position: 'absolute',
@@ -140,6 +145,7 @@ export default function LoginPage() {
             background: accentColor,
             borderRadius: '26px',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: `0 0 20px ${accentColor}44`,
           }} />
           
           <button
@@ -150,11 +156,12 @@ export default function LoginPage() {
               padding: '10px 0',
               background: 'transparent',
               border: 'none',
-              color: isLogin ? '#000' : isDark ? '#94a3b8' : '#64748b',
+              color: isLogin ? '#000' : 'var(--text-secondary)',
               fontWeight: '800',
               fontSize: '0.9rem',
               cursor: 'pointer',
               zIndex: 2,
+              transition: 'color 0.3s ease',
             }}
           >
             Sign In
@@ -168,11 +175,12 @@ export default function LoginPage() {
               padding: '10px 0',
               background: 'transparent',
               border: 'none',
-              color: !isLogin ? '#000' : isDark ? '#94a3b8' : '#64748b',
+              color: !isLogin ? '#000' : 'var(--text-secondary)',
               fontWeight: '800',
               fontSize: '0.9rem',
               cursor: 'pointer',
               zIndex: 2,
+              transition: 'color 0.3s ease',
             }}
           >
             Create Account
@@ -182,7 +190,7 @@ export default function LoginPage() {
         {/* Form Inputs */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Email Address
             </label>
             <input
@@ -194,18 +202,21 @@ export default function LoginPage() {
                 width: '100%',
                 padding: '14px 18px',
                 background: isDark ? 'rgba(0,0,0,0.3)' : '#ffffff',
-                border: `1px solid ${borderColor}`,
-                color: isDark ? '#f8fafc' : '#0f172a',
+                border: `1px solid var(--surface-border)`,
+                color: 'var(--text-primary)',
                 borderRadius: '14px',
                 fontSize: '0.95rem',
                 outline: 'none',
+                transition: 'border-color 0.2s',
               }}
+              onFocus={(e) => e.currentTarget.style.borderColor = accentColor}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--surface-border)'}
               required
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Password
             </label>
             <input
@@ -217,12 +228,15 @@ export default function LoginPage() {
                 width: '100%',
                 padding: '14px 18px',
                 background: isDark ? 'rgba(0,0,0,0.3)' : '#ffffff',
-                border: `1px solid ${borderColor}`,
-                color: isDark ? '#f8fafc' : '#0f172a',
+                border: `1px solid var(--surface-border)`,
+                color: 'var(--text-primary)',
                 borderRadius: '14px',
                 fontSize: '0.95rem',
                 outline: 'none',
+                transition: 'border-color 0.2s',
               }}
+              onFocus={(e) => e.currentTarget.style.borderColor = accentColor}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--surface-border)'}
               required
             />
           </div>
@@ -257,12 +271,33 @@ export default function LoginPage() {
               marginTop: '8px',
               opacity: (loading || !email || !password) ? 0.6 : 1,
               boxShadow: `0 4px 20px ${accentColor}44`,
+              transition: 'all 0.2s',
             }}
           >
-            {loading ? 'Authenticating...' : isLogin ? 'Access Workspace →' : 'Create Account'}
+            {loading ? 'Authenticating...' : isLogin ? 'Access Workspace →' : 'Create Account →'}
           </button>
         </form>
 
+        {/* Toggle between Login and Sign Up */}
+        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+          </span>
+          <button
+            onClick={() => { setIsLogin(!isLogin); setMessage(''); }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: accentColor,
+              fontWeight: '800',
+              cursor: 'pointer',
+              marginLeft: '8px',
+              fontSize: '0.9rem',
+            }}
+          >
+            {isLogin ? 'Sign Up' : 'Sign In'}
+          </button>
+        </div>
       </div>
     </div>
   );
