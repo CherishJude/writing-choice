@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ChatWidget from '@/app/components/ChatWidget';
 
 export default function Home() {
+  const router = useRouter();
   // ----- User & Auth State -----
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<'super_admin' | 'moderator' | 'member'>('member');
@@ -285,17 +287,13 @@ export default function Home() {
             </button>
 
             {user ? (
-              <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                <button className="menu-item">
-                  <span>👤</span> {displayName || 'Member Workspace'}
-                </button>
-              </Link>
+              <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/dashboard'); }}>
+                <span>👤</span> {displayName || 'Member Workspace'}
+              </button>
             ) : (
-              <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
-                <button className="menu-item">
-                  <span>🔐</span> Login / Sign Up
-                </button>
-              </Link>
+              <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/auth/login'); }}>
+                <span>🔐</span> Login / Sign Up
+              </button>
             )}
 
             <Link href="/about" onClick={() => setIsMenuOpen(false)}>
@@ -1556,11 +1554,13 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <Link href="/auth/login" onClick={() => setIsSidebarOpen(false)}>
-            <button className="sidebar-item" style={{ marginBottom: '16px', border: `1px solid ${accentColor}`, color: accentColor }}>
-              <span>🔑</span> Login / Sign Up
-            </button>
-          </Link>
+          <button 
+            className="sidebar-item" 
+            onClick={() => { setIsSidebarOpen(false); router.push('/auth/login'); }}
+            style={{ marginBottom: '16px', border: `1px solid ${accentColor}`, color: accentColor }}
+          >
+            <span>🔑</span> Login / Sign Up
+          </button>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
