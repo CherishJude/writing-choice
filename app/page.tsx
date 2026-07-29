@@ -396,46 +396,6 @@ export default function Home() {
           boxSizing: 'border-box',
         }}>
 
-        {/* DESKTOP MODE ACTIVE NOTIFICATION BANNER */}
-        {viewMode === 'desktop' && (
-          <div style={{
-            background: isDark ? 'rgba(0, 242, 254, 0.08)' : 'rgba(0, 242, 254, 0.12)',
-            border: `1px solid ${accentColor}`,
-            borderRadius: '16px',
-            padding: '10px 18px',
-            margin: '12px auto 0 auto',
-            maxWidth: '1200px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.82rem',
-            fontWeight: '800',
-            color: accentColor,
-            flexWrap: 'wrap',
-            gap: '8px',
-          }}>
-            <span>💻 Desktop Site Mode Saved — Swipe horizontally to view full desktop columns</span>
-            <button
-              onClick={() => {
-                setViewMode('auto');
-                localStorage.setItem('writingchoice_view_mode', 'auto');
-              }}
-              style={{
-                background: accentColor,
-                color: '#000',
-                border: 'none',
-                padding: '4px 14px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                fontWeight: '900',
-                fontSize: '0.78rem',
-              }}
-            >
-              📱 Switch to Mobile View
-            </button>
-          </div>
-        )}
-
         {/* ===== HERO SECTION ===== */}
         <section style={{
           maxWidth: '1200px',
