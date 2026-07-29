@@ -27,18 +27,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No recipient emails found' }, { status: 404 });
     }
 
-    // 4. Configure Nodemailer Transporter using Gmail App Password
+    // 4. Configure Nodemailer Transporter using Supabase SMTP Settings
+    //    These match what you entered in Supabase Dashboard → Authentication → Email → SMTP
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: false, // true for 465, false for other ports
       auth: {
-        user: 'judecherish23@gmail.com',
-        pass: process.env.GMAIL_APP_PASSWORD,
+        user: process.env.SMTP_USER || 'judecherish23@gmail.com',
+        pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD,
       },
     });
 
     // 5. Send Email Broadcast
     await transporter.sendMail({
-      from: '"WritingChoice Admin" <judecherish23@gmail.com>',
+      from: `"${process.env.SMTP_SENDER_NAME || 'WritingChoice Support'}" <${process.env.SMTP_SENDER_EMAIL || process.env.SMTP_USER || 'judecherish23@gmail.com'}>`,
       to: 'judecherish23@gmail.com', // Admin primary copy
       bcc: recipients, // BCC keeps all user email addresses private from each other
       subject: subject,
