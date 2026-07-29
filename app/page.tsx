@@ -18,9 +18,6 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isGroupSubmenuOpen, setIsGroupSubmenuOpen] = useState(false);
 
-  // ----- Adjustable View Mode State (Auto-Fit | Mobile | Desktop) -----
-  const [viewMode, setViewMode] = useState<'auto' | 'mobile' | 'desktop'>('auto');
-
   // ----- Modal States -----
   const [showCalculator, setShowCalculator] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -86,11 +83,6 @@ export default function Home() {
       setAccentName(savedAccent);
       setAccentColor(accentColors[savedAccent].hex);
       document.documentElement.style.setProperty('--accent-color', accentColors[savedAccent].hex);
-    }
-
-    const savedViewMode = localStorage.getItem('writingchoice_view_mode');
-    if (savedViewMode === 'desktop' || savedViewMode === 'auto') {
-      setViewMode(savedViewMode as any);
     }
 
         const checkUser = async () => {
@@ -348,19 +340,21 @@ export default function Home() {
       </div>
 
       {/* ===== CLEAN TOP HEADER (MOBILE/DESKTOP FRAME & DARK MODE TOGGLES) ===== */}
-      <header style={{
+            <header style={{
         position: 'sticky',
         top: 0,
         zIndex: 9990,
         background: isDark ? 'rgba(10, 13, 20, 0.85)' : 'rgba(248, 250, 252, 0.85)',
         backdropFilter: 'blur(20px)',
         borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-        padding: '12px 24px',
+        padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '10px',
       }}>
-        <div style={{ marginLeft: '60px', fontWeight: '800', fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b' }}>
+        <div style={{ fontWeight: '800', fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b', flex: 1, minWidth: '120px' }}>
           {user ? (
             <span style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor }}>
               {displayName}
@@ -370,63 +364,36 @@ export default function Home() {
           )}
         </div>
 
-        {/* TOP RIGHT CONTROLS: DESKTOP SITE TOGGLE & DARK MODE */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          
-          {/* DESKTOP SITE / MOBILE VIEW TOGGLE */}
-          <button
-            onClick={() => {
-              const nextMode = viewMode === 'desktop' ? 'auto' : 'desktop';
-              setViewMode(nextMode);
-              localStorage.setItem('writingchoice_view_mode', nextMode);
-            }}
-            style={{
-              background: viewMode === 'desktop' ? accentColor : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
-              color: viewMode === 'desktop' ? '#000' : isDark ? '#fff' : '#000',
-              border: `1px solid ${accentColor}`,
-              padding: '6px 14px',
-              borderRadius: '30px',
-              cursor: 'pointer',
-              fontWeight: '800',
-              fontSize: '0.78rem',
-            }}
-            title="Toggle between Mobile/Responsive and Full Desktop Site view"
-          >
-            {viewMode === 'desktop' ? '📱 Switch to Mobile View' : '💻 Desktop Site View'}
-          </button>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={toggleTheme}
             style={{
               background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
               border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
               color: isDark ? '#fff' : '#000',
-              padding: '6px 14px',
+              padding: '6px 12px',
               borderRadius: '30px',
               cursor: 'pointer',
               fontWeight: '800',
-              fontSize: '0.82rem',
+              fontSize: '0.78rem',
             }}
           >
-            {isDark ? '🌙 Dark' : '☀️ Light'}
+            {isDark ? '🌙' : '☀️'}
           </button>
         </div>
       </header>
 
       {/* ===== 100% FLUID EDGE-TO-EDGE RESPONSIVE MAIN CONTENT WRAPPER ===== */}
-      <div style={{
-        overflowX: viewMode === 'desktop' ? 'auto' : 'hidden',
-        WebkitOverflowScrolling: 'touch',
-        width: '100%'
+            <div style={{
+        width: '100%',
+        overflowX: 'hidden',
       }}>
         <main style={{
           width: '100%',
-          maxWidth: viewMode === 'desktop' ? '1200px' : '100%',
-          minWidth: viewMode === 'desktop' ? '1000px' : 'auto',
+          maxWidth: '1200px',
           margin: '0 auto',
-          padding: viewMode === 'desktop' ? '20px' : '0 12px',
+          padding: '0 12px',
           boxSizing: 'border-box',
-          transition: 'all 0.25s ease',
         }}>
 
         {/* DESKTOP MODE ACTIVE NOTIFICATION BANNER */}
