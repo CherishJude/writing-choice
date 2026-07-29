@@ -163,7 +163,15 @@ export default function Home() {
   }, [isMenuOpen]);
 
   // ===== MOBILE HARDWARE BACK BUTTON INTERCEPTOR =====
+    const skipHistoryCleanup = useRef(false);
   const anyModalOpen = isMenuOpen || isSidebarOpen || showCalculator || showTerms || showRefundPolicy || showSectorsMenu;
+
+    const navigateAndClose = (path: string) => {
+    skipHistoryCleanup.current = true;
+    setIsMenuOpen(false);
+    setIsSidebarOpen(false);
+    router.push(path);
+  };
 
   useEffect(() => {
     const handlePopState = () => {
@@ -181,14 +189,15 @@ export default function Home() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     if (anyModalOpen) {
-      // When a modal opens, push a dummy state to the browser history
       window.history.pushState({ popupOpen: true }, '');
     } else {
-      // If the modal was closed manually via an "X" button, clean up the history silently
       if (window.history.state && window.history.state.popupOpen) {
-        window.history.back();
+        if (!skipHistoryCleanup.current) {
+          window.history.back();
+        }
+        skipHistoryCleanup.current = false;
       }
     }
   }, [anyModalOpen]);
@@ -298,17 +307,17 @@ export default function Home() {
               <span>☰</span> Main Menu
             </button>
 
-            {user ? (
-              <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/dashboard'); }}>
+                        {user ? (
+              <button className="menu-item" onClick={() => navigateAndClose('/dashboard')}>
                 <span>👤</span> {displayName || 'Member Workspace'}
               </button>
             ) : (
-              <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/auth/login'); }}>
+              <button className="menu-item" onClick={() => navigateAndClose('/auth/login')}>
                 <span>🔐</span> Login / Sign Up
               </button>
             )}
 
-                        <button className="menu-item" onClick={() => { setIsMenuOpen(false); router.push('/about'); }}>
+                                    <button className="menu-item" onClick={() => navigateAndClose('/about')}>
               <span>ℹ️</span> About Platform
             </button>
 
@@ -1564,27 +1573,27 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <button 
+                    <button 
             className="sidebar-item" 
-            onClick={() => { setIsSidebarOpen(false); router.push('/auth/login'); }}
+            onClick={() => navigateAndClose('/auth/login')}
             style={{ marginBottom: '16px', border: `1px solid ${accentColor}`, color: accentColor }}
           >
             <span>🔑</span> Login / Sign Up
           </button>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/'); }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <button className="sidebar-item" onClick={() => navigateAndClose('/')}>
             <span>🏠</span> Home Platform
           </button>
 
-          <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/about'); }}>
+          <button className="sidebar-item" onClick={() => navigateAndClose('/about')}>
             <span>👤</span> About WritingChoice
           </button>
 
           {user && (
             <>
-                            <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }}>
+                                          <button className="sidebar-item" onClick={() => navigateAndClose('/dashboard')}>
                 <span>📊</span> Member Dashboard
               </button>
 
@@ -1601,7 +1610,7 @@ export default function Home() {
                     { name: 'Entertainment', icon: '🎬' },
                     { name: 'Friends Zone', icon: '🤝' },
                   ].map((grp) => (
-                                        <button key={grp.name} className="sidebar-subitem" onClick={() => { setIsSidebarOpen(false); router.push('/chat'); }}>
+                       <button key={grp.name} className="sidebar-subitem" onClick={() => navigateAndClose('/chat')}>
                       <span>{grp.icon}</span> {grp.name}
                     </button>
                   ))}
@@ -1609,7 +1618,7 @@ export default function Home() {
               )}
 
               {(userRole === 'super_admin' || userRole === 'moderator') && (
-                                <button className="sidebar-item" onClick={() => { setIsSidebarOpen(false); router.push('/admin'); }} style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
+                        <button className="sidebar-item" onClick={() => navigateAndClose('/admin')} style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
                   <span>🛡️</span> {userRole === 'super_admin' ? 'Super Admin Console' : 'Moderator Console'}
                 </button>
               )}
