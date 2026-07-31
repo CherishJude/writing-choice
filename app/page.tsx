@@ -38,7 +38,6 @@ export default function Home() {
 
   // ----- FAQ State -----
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-const [pageData, setPageData] = useState<any>({});
 
   // ----- Real-time Clock & Business Hours State -----
   const [time, setTime] = useState('');
@@ -49,7 +48,9 @@ const [pageData, setPageData] = useState<any>({});
   const [isDark, setIsDark] = useState(true);
   const [accentName, setAccentName] = useState('default');
   const [accentColor, setAccentColor] = useState('#00f2fe');
-const [pageData, setPageData] = useState<any>({});
+
+  // ----- Dynamic Page Content (editable by admin) -----
+  const [pageData, setPageData] = useState<any>({});
 
   const accentColors: { [key: string]: { name: string; hex: string } } = {
     default: { name: 'Default Cyan', hex: '#00f2fe' },
@@ -87,27 +88,9 @@ const [pageData, setPageData] = useState<any>({});
       document.documentElement.style.setProperty('--accent-color', accentColors[savedAccent].hex);
     }
 
-        const checkUser = async () => {
+    const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-
-          // Fetch dynamic page sections
-    const fetchPageData = async () => {
-      try {
-        const res = await fetch('/api/admin/page-sections');
-        const data = await res.json();
-        const map: any = {};
-        if (data.sections) {
-          data.sections.forEach((s: any) => {
-            map[s.section_key] = s.content;
-          });
-        }
-        setPageData(map);
-      } catch (e) {
-        console.error('Failed to load page sections:', e);
-      }
-    };
-    fetchPageData();
 
       if (user) {
         // Fetch member record from the database
@@ -120,10 +103,8 @@ const [pageData, setPageData] = useState<any>({});
         const emailPrefix = user.email ? user.email.split('@')[0] : 'User';
 
         if (member) {
-          // Use the role from the database
           setUserRole(member.role as 'super_admin' | 'moderator' | 'member');
 
-          // Use the database display_name if available, otherwise build one
           if (member.display_name) {
             setDisplayName(member.display_name);
           } else {
@@ -132,7 +113,6 @@ const [pageData, setPageData] = useState<any>({});
             );
           }
         } else {
-          // No member record – default to member
           setUserRole('member');
           setDisplayName(`Member (${emailPrefix})`);
         }
@@ -152,6 +132,25 @@ const [pageData, setPageData] = useState<any>({});
 
     updateClock();
     const interval = setInterval(updateClock, 1000);
+
+    // Fetch dynamic page sections from API
+    const fetchPageData = async () => {
+      try {
+        const res = await fetch('/api/admin/page-sections');
+        const data = await res.json();
+        const map: any = {};
+        if (data.sections) {
+          data.sections.forEach((s: any) => {
+            map[s.section_key] = s.content;
+          });
+        }
+        setPageData(map);
+      } catch (e) {
+        console.error('Failed to load page sections:', e);
+      }
+    };
+    fetchPageData();
+
     return () => clearInterval(interval);
   }, []);
 
@@ -175,10 +174,10 @@ const [pageData, setPageData] = useState<any>({});
   }, [isMenuOpen]);
 
   // ===== MOBILE HARDWARE BACK BUTTON INTERCEPTOR =====
-    const skipHistoryCleanup = useRef(false);
+  const skipHistoryCleanup = useRef(false);
   const anyModalOpen = isMenuOpen || isSidebarOpen || showCalculator || showTerms || showRefundPolicy || showSectorsMenu;
 
-    const navigateAndClose = (path: string) => {
+  const navigateAndClose = (path: string) => {
     skipHistoryCleanup.current = true;
     setIsMenuOpen(false);
     setIsSidebarOpen(false);
@@ -201,7 +200,7 @@ const [pageData, setPageData] = useState<any>({});
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     if (anyModalOpen) {
       window.history.pushState({ popupOpen: true }, '');
     } else {
@@ -319,7 +318,7 @@ const [pageData, setPageData] = useState<any>({});
               <span>☰</span> Main Menu
             </button>
 
-                        {user ? (
+            {user ? (
               <button className="menu-item" onClick={() => navigateAndClose('/dashboard')}>
                 <span>👤</span> {displayName || 'Member Workspace'}
               </button>
@@ -329,7 +328,7 @@ const [pageData, setPageData] = useState<any>({});
               </button>
             )}
 
-                                    <button className="menu-item" onClick={() => navigateAndClose('/about')}>
+            <button className="menu-item" onClick={() => navigateAndClose('/about')}>
               <span>ℹ️</span> About Platform
             </button>
 
@@ -360,7 +359,7 @@ const [pageData, setPageData] = useState<any>({});
       </div>
 
       {/* ===== CLEAN TOP HEADER (MOBILE/DESKTOP FRAME & DARK MODE TOGGLES) ===== */}
-            <header style={{
+      <header style={{
         position: 'sticky',
         top: 0,
         zIndex: 9990,
@@ -404,7 +403,7 @@ const [pageData, setPageData] = useState<any>({});
       </header>
 
       {/* ===== 100% FLUID EDGE-TO-EDGE RESPONSIVE MAIN CONTENT WRAPPER ===== */}
-            <div style={{
+      <div style={{
         width: '100%',
         overflowX: 'hidden',
       }}>
@@ -429,15 +428,15 @@ const [pageData, setPageData] = useState<any>({});
           </div>
 
           <h1 style={{
-  fontSize: 'clamp(2rem, 5.5vw, 3.8rem)',
-  fontWeight: '900',
-  letterSpacing: '-1.5px',
-  lineHeight: '1.15',
-  margin: '10px 0 20px 0',
-  color: isDark ? '#ffffff' : '#0f172a',
-}}>
-  {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
-</h1>
+            fontSize: 'clamp(2rem, 5.5vw, 3.8rem)',
+            fontWeight: '900',
+            letterSpacing: '-1.5px',
+            lineHeight: '1.15',
+            margin: '10px 0 20px 0',
+            color: isDark ? '#ffffff' : '#0f172a',
+          }}>
+            {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+          </h1>
 
           <p style={{
             maxWidth: '740px',
@@ -446,8 +445,8 @@ const [pageData, setPageData] = useState<any>({});
             color: isDark ? '#94a3b8' : '#475569',
             lineHeight: '1.7',
           }}>
-            100% human-crafted research, dissertations, essays, and programming projects. 
-            Powered by vetted subject specialists and integrated with our AI assistant <strong style={{ color: accentColor }}>Cherish SI</strong>.
+            {pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}
+            <strong style={{ color: accentColor }}>Cherish SI</strong>.
           </p>
         </section>
 
@@ -455,8 +454,12 @@ const [pageData, setPageData] = useState<any>({});
         <div style={{ maxWidth: '1000px', margin: '15px auto 15px auto', padding: '0 20px' }}>
           <div className="led-bar">
             <div className="led-scroll">
-              <span className="led-text">Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study</span>
-              <span className="led-text">Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study</span>
+              <span className="led-text">
+                {pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
+              </span>
+              <span className="led-text">
+                {pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
+              </span>
             </div>
           </div>
         </div>
@@ -487,15 +490,10 @@ const [pageData, setPageData] = useState<any>({});
           <div style={surfaceCardStyle} className="glass-card">
             <div style={{ padding: '30px 26px' }}>
               <h2 style={{ color: accentColor, margin: '0 0 12px 0', fontSize: '1.6rem', fontWeight: '800' }}>
-                ✨ Welcome to WritingChoice
+                {pageData.welcome?.title || '✨ Welcome to WritingChoice'}
               </h2>
               <p style={{ color: isDark ? '#f0f0f0' : '#0f172a', lineHeight: '1.8', fontSize: '1rem', margin: 0 }}>
-                Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, 
-                or a professional needing a flawless document, <strong style={{ color: accentColor }}>WritingChoice</strong> is built for you. 
-                Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools 
-                to deliver <strong>100% human-written, plagiarism-free academic and professional work</strong>. 
-                We believe quality writing should be accessible, affordable, and stress-free. 
-                Take a deep breath 😤 you're in the right place. 😮‍💨
+                {pageData.welcome?.text || `Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, or a professional needing a flawless document, WritingChoice is built for you. Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools to deliver 100% human-written, plagiarism-free academic and professional work. We believe quality writing should be accessible, affordable, and stress-free. Take a deep breath 😤 you're in the right place. 😮‍💨`}
               </p>
             </div>
           </div>
@@ -508,7 +506,7 @@ const [pageData, setPageData] = useState<any>({});
               STRICTLY ENFORCED PRICING
             </span>
             <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
-              Choose Your Preferred Quality Tier
+              {pageData.pricing?.title || 'Choose Your Preferred Quality Tier'}
             </h2>
           </div>
 
@@ -559,7 +557,7 @@ const [pageData, setPageData] = useState<any>({});
           </div>
         </section>
 
-        {/* ===== 3 PRIMARY ACTION CARDS ===== */}
+                {/* ===== 3 PRIMARY ACTION CARDS ===== */}
         <section className="responsive-grid" style={{
           maxWidth: '1200px',
           margin: '20px auto 40px auto',
@@ -1014,7 +1012,7 @@ const [pageData, setPageData] = useState<any>({});
             </div>
           </div>
 
-          {/* SECTION 4: HOW WE ENSURE QUALITY JOBS; OUR PROCESS */}
+                    {/* SECTION 4: HOW WE ENSURE QUALITY JOBS; OUR PROCESS */}
           <div style={surfaceCardStyle} className="glass-card">
             <div style={{ padding: '30px 25px' }}>
               <h3 style={{ color: accentColor, margin: '0 0 20px 0', fontSize: '1.4rem', fontWeight: '800' }}>
@@ -1053,7 +1051,7 @@ const [pageData, setPageData] = useState<any>({});
               HELP CENTER
             </span>
             <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
-              Frequently Asked Questions
+              {pageData.faq?.title || 'Frequently Asked Questions'}
             </h2>
           </div>
 
@@ -1508,7 +1506,7 @@ const [pageData, setPageData] = useState<any>({});
 
         {/* User Badge & Address Designation */}
         {user ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', marginBottom: '16px', border: `1px solid ${userRole === 'super_admin' ? '#ef4444' : accentColor}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', marginBottom: '16px', border: `1px solid ${userRole === 'super_admin' ? '#ef4444' : accentColor}` }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: userRole === 'super_admin' ? '#ef4444' : accentColor, color: '#000', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
               {userRole === 'super_admin' ? '👑' : (user.email ? user.email.charAt(0).toUpperCase() : '👤')}
             </div>
@@ -1520,7 +1518,7 @@ const [pageData, setPageData] = useState<any>({});
             </div>
           </div>
         ) : (
-                    <button 
+          <button 
             className="sidebar-item" 
             onClick={() => navigateAndClose('/auth/login')}
             style={{ marginBottom: '16px', border: `1px solid ${accentColor}`, color: accentColor }}
@@ -1529,7 +1527,7 @@ const [pageData, setPageData] = useState<any>({});
           </button>
         )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <button className="sidebar-item" onClick={() => navigateAndClose('/')}>
             <span>🏠</span> Home Platform
           </button>
@@ -1540,8 +1538,13 @@ const [pageData, setPageData] = useState<any>({});
 
           {user && (
             <>
-                                          <button className="sidebar-item" onClick={() => navigateAndClose('/dashboard')}>
+              <button className="sidebar-item" onClick={() => navigateAndClose('/dashboard')}>
                 <span>📊</span> Member Dashboard
+              </button>
+
+              {/* SETTINGS BUTTON – for all logged‑in users */}
+              <button className="sidebar-item" onClick={() => navigateAndClose('/dashboard/settings')}>
+                <span>⚙️</span> Settings
               </button>
 
               <button className="sidebar-item" onClick={() => setIsGroupSubmenuOpen(!isGroupSubmenuOpen)}>
@@ -1557,7 +1560,7 @@ const [pageData, setPageData] = useState<any>({});
                     { name: 'Entertainment', icon: '🎬' },
                     { name: 'Friends Zone', icon: '🤝' },
                   ].map((grp) => (
-                       <button key={grp.name} className="sidebar-subitem" onClick={() => navigateAndClose('/chat')}>
+                    <button key={grp.name} className="sidebar-subitem" onClick={() => navigateAndClose('/chat')}>
                       <span>{grp.icon}</span> {grp.name}
                     </button>
                   ))}
@@ -1565,8 +1568,15 @@ const [pageData, setPageData] = useState<any>({});
               )}
 
               {(userRole === 'super_admin' || userRole === 'moderator') && (
-                        <button className="sidebar-item" onClick={() => navigateAndClose('/admin')} style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
+                <button className="sidebar-item" onClick={() => navigateAndClose('/admin')} style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor, fontWeight: '800' }}>
                   <span>🛡️</span> {userRole === 'super_admin' ? 'Super Admin Console' : 'Moderator Console'}
+                </button>
+              )}
+
+              {/* EDIT FRONT PAGE – only for super_admin */}
+              {userRole === 'super_admin' && (
+                <button className="sidebar-item" onClick={() => navigateAndClose('/admin/editor')}>
+                  <span>🎨</span> Edit Front Page
                 </button>
               )}
 

@@ -57,7 +57,7 @@ export default function AdminPage() {
     if (orderData) setOrders(orderData);
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -88,11 +88,12 @@ export default function AdminPage() {
 
   // Super Admin: Promote to Moderator or Demote to Member
   const toggleModeratorRole = async (email: string, currentRole: string) => {
-    if (currentUser?.email !== 'judecherish23@gmail.com') {
-      alert('Only Super Admin (judecherish23@gmail.com) can manage moderator roles!');
+    if (userRole !== 'super_admin') {
+      alert('Only Super Admin can manage moderator roles!');
       return;
     }
 
+    // Prevent demoting the built‑in super admin account via email (still safe)
     if (email === 'judecherish23@gmail.com') {
       alert('Super Admin role cannot be modified.');
       return;
@@ -108,7 +109,7 @@ export default function AdminPage() {
   };
 
   const deleteUser = async (email: string) => {
-    if (currentUser?.email !== 'judecherish23@gmail.com') {
+    if (userRole !== 'super_admin') {
       alert('Only Super Admin can delete members.');
       return;
     }
@@ -128,7 +129,7 @@ export default function AdminPage() {
   };
 
   const sendBroadcast = async () => {
-    if (currentUser?.email !== 'judecherish23@gmail.com') {
+    if (userRole !== 'super_admin') {
       alert('Only Super Admin can send platform broadcasts.');
       return;
     }
@@ -189,7 +190,7 @@ export default function AdminPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Navigation Top Bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/dashboard">
               <button style={{
@@ -206,13 +207,10 @@ export default function AdminPage() {
               </button>
             </Link>
 
-            {/* NEW BUTTON – only for super_admin */}
+            {/* EDIT FRONT PAGE BUTTON – now navigates to the real editor */}
             {userRole === 'super_admin' && (
               <button
-                onClick={() => {
-                  // TODO: open front page editor (modal or route)
-                  alert('Front Page Editor coming soon!');
-                }}
+                onClick={() => router.push('/admin/editor')}
                 style={{
                   background: accentColor,
                   border: 'none',
