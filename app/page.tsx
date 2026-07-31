@@ -38,6 +38,7 @@ export default function Home() {
 
   // ----- FAQ State -----
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+const [pageData, setPageData] = useState<any>({});
 
   // ----- Real-time Clock & Business Hours State -----
   const [time, setTime] = useState('');
@@ -48,6 +49,7 @@ export default function Home() {
   const [isDark, setIsDark] = useState(true);
   const [accentName, setAccentName] = useState('default');
   const [accentColor, setAccentColor] = useState('#00f2fe');
+const [pageData, setPageData] = useState<any>({});
 
   const accentColors: { [key: string]: { name: string; hex: string } } = {
     default: { name: 'Default Cyan', hex: '#00f2fe' },
@@ -88,6 +90,24 @@ export default function Home() {
         const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+          // Fetch dynamic page sections
+    const fetchPageData = async () => {
+      try {
+        const res = await fetch('/api/admin/page-sections');
+        const data = await res.json();
+        const map: any = {};
+        if (data.sections) {
+          data.sections.forEach((s: any) => {
+            map[s.section_key] = s.content;
+          });
+        }
+        setPageData(map);
+      } catch (e) {
+        console.error('Failed to load page sections:', e);
+      }
+    };
+    fetchPageData();
 
       if (user) {
         // Fetch member record from the database
@@ -409,15 +429,15 @@ export default function Home() {
           </div>
 
           <h1 style={{
-            fontSize: 'clamp(2rem, 5.5vw, 3.8rem)',
-            fontWeight: '900',
-            letterSpacing: '-1.5px',
-            lineHeight: '1.15',
-            margin: '10px 0 20px 0',
-            color: isDark ? '#ffffff' : '#0f172a',
-          }}>
-            Elevate Your Academic & Professional Research
-          </h1>
+  fontSize: 'clamp(2rem, 5.5vw, 3.8rem)',
+  fontWeight: '900',
+  letterSpacing: '-1.5px',
+  lineHeight: '1.15',
+  margin: '10px 0 20px 0',
+  color: isDark ? '#ffffff' : '#0f172a',
+}}>
+  {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+</h1>
 
           <p style={{
             maxWidth: '740px',

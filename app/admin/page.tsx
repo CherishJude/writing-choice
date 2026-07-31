@@ -57,7 +57,7 @@ export default function AdminPage() {
     if (orderData) setOrders(orderData);
   };
 
-  useEffect(() => {
+    useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -67,22 +67,19 @@ export default function AdminPage() {
 
       setCurrentUser(user);
 
-      // Super Admin check (judecherish23@gmail.com ONLY)
-      if (user.email === 'judecherish23@gmail.com') {
-        setUserRole('super_admin');
-        await loadData();
-        setLoading(false);
-        return;
-      }
+      // Check role from members table
+      const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('email', user.email)
+        .single();
 
-      // Check if user is a Moderator
-      const { data: member } = await supabase.from('members').select('role').eq('email', user.email).single();
-      if (member && member.role === 'moderator') {
-        setUserRole('moderator');
+      if (member && (member.role === 'super_admin' || member.role === 'moderator')) {
+        setUserRole(member.role as 'super_admin' | 'moderator');
         await loadData();
         setLoading(false);
       } else {
-        // Not authorized for admin console
+        // Not authorized
         router.push('/dashboard');
       }
     };
@@ -192,21 +189,46 @@ export default function AdminPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Navigation Top Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <Link href="/dashboard">
-            <button style={{
-              background: 'transparent',
-              border: `1px solid ${accentColor}`,
-              color: accentColor,
-              padding: '8px 20px',
-              borderRadius: '30px',
-              cursor: 'pointer',
-              fontWeight: '700',
-              fontSize: '0.85rem',
-            }}>
-              ← Back to Member Dashboard
-            </button>
-          </Link>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link href="/dashboard">
+              <button style={{
+                background: 'transparent',
+                border: `1px solid ${accentColor}`,
+                color: accentColor,
+                padding: '8px 20px',
+                borderRadius: '30px',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '0.85rem',
+              }}>
+                ← Back to Member Dashboard
+              </button>
+            </Link>
+
+            {/* NEW BUTTON – only for super_admin */}
+            {userRole === 'super_admin' && (
+              <button
+                onClick={() => {
+                  // TODO: open front page editor (modal or route)
+                  alert('Front Page Editor coming soon!');
+                }}
+                style={{
+                  background: accentColor,
+                  border: 'none',
+                  borderRadius: '30px',
+                  padding: '8px 20px',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  color: '#000',
+                  cursor: 'pointer',
+                  boxShadow: `0 4px 15px ${accentColor}44`,
+                }}
+              >
+                ✏️ Edit Front Page
+              </button>
+            )}
+          </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{
