@@ -1943,13 +1943,6 @@ fetchReviews();
                 </button>
               )}
 
-              {/* EDIT FRONT PAGE – only for super_admin */}
-              {userRole === 'super_admin' && (
-                <button className="sidebar-item" onClick={() => navigateAndClose('/admin/editor')}>
-                  <span>🎨</span> Edit Front Page
-                </button>
-              )}
-
               {/* LOGOUT OPTION RIGHT UNDER ADMIN CONSOLE */}
               <button className="sidebar-item" onClick={handleLogout} style={{ color: '#ef4444', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '8px', paddingTop: '12px' }}>
                 <span>🚪</span> Logout / Sign Out

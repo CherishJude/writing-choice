@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface InlineEditorProps {
   sectionKey: string;
@@ -18,23 +19,23 @@ export default function InlineEditor({ sectionKey, field, initialValue, type = '
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/page-sections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          section_key: sectionKey,
-          content: { [field]: value },
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setEditing(false);
-        if (onSave) onSave();
+      // Directly upsert the page section using the browser's supabase client.
+      // This client already has the logged-in user's session, so no auth error.
+      const { error } = await supabase
+        .from('page_sections')
+        .upsert(
+          { section_key: sectionKey, content: { [field]: value }, updated_at: new Date().toISOString() },
+          { onConflict: 'section_key' }
+        );
+
+      if (error) {
+        alert('Failed to save: ' + error.message);
       } else {
-        alert('Failed to save: ' + (data.error || 'Unknown error'));
+        setEditing(false);
+        if (onSave) onSave(); // refresh the page data
       }
     } catch (err) {
       alert('Network error. Please try again.');
