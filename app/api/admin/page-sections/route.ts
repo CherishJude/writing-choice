@@ -9,7 +9,18 @@ async function getAuthenticatedClient(req: Request) {
     .find(c => c.startsWith('sb-') && c.includes('-auth-token'));
   
   if (!tokenCookie) return null;
-  const tokenValue = tokenCookie.split('=')[1];
+  // Supabase stores the token as a base64-encoded JSON string like: "base64-{...}"
+// It may be split into multiple parts (0, 1, 2) — we need the full encoded value
+const tokenParts = tokenCookie.split('=').slice(1).join('=');
+let tokenValue = '';
+try {
+  // Decode the base64 JSON to extract the actual access_token
+  const decoded = JSON.parse(atob(tokenParts));
+  tokenValue = decoded.access_token || '';
+} catch {
+  // Fallback: try using the raw value directly
+  tokenValue = tokenParts;
+}
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   

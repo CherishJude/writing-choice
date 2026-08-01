@@ -10,7 +10,7 @@ interface InlineEditorProps {
   onSave?: () => void;
   style?: React.CSSProperties;
   className?: string;
-  children?: React.ReactNode; // fallback display when not editing
+  children?: React.ReactNode;
 }
 
 export default function InlineEditor({ sectionKey, field, initialValue, type = 'text', onSave, style, className, children }: InlineEditorProps) {
@@ -43,39 +43,117 @@ export default function InlineEditor({ sectionKey, field, initialValue, type = '
     }
   };
 
-  // If not editing, show the value (with optional children fallback)
   if (!editing) {
     return (
-      <span onClick={() => setEditing(true)} style={{ cursor: 'pointer', ...style }} className={className}>
+      <span
+        onClick={() => setEditing(true)}
+        style={{
+          cursor: 'pointer',
+          borderBottom: '2px dashed rgba(0,242,254,0.3)',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          transition: 'all 0.2s',
+          display: 'inline-block',
+          ...style,
+        }}
+        className={className}
+        title="Click to edit"
+      >
         {children || value}
+        <span style={{ fontSize: '0.7rem', marginLeft: '6px', opacity: 0.5, verticalAlign: 'middle' }}>✎</span>
       </span>
     );
   }
 
-  // Editing mode
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'flex-start',
+      gap: '10px',
+      flexWrap: 'wrap',
+      background: 'rgba(0,0,0,0.2)',
+      padding: '12px',
+      borderRadius: '12px',
+      border: '1px solid rgba(0,242,254,0.4)',
+      boxShadow: '0 4px 20px rgba(0,242,254,0.15)',
+      margin: '4px 0',
+      zIndex: 10,
+      position: 'relative',
+    }}>
       {type === 'textarea' ? (
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          rows={3}
-          style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px' }}
+          rows={4}
+          style={{
+            padding: '10px 14px',
+            borderRadius: '10px',
+            border: '1px solid rgba(0,242,254,0.3)',
+            background: '#0a0d14',
+            color: '#f0f0f0',
+            minWidth: '280px',
+            fontSize: '0.95rem',
+            outline: 'none',
+            fontFamily: 'inherit',
+            resize: 'vertical',
+          }}
+          autoFocus
         />
       ) : (
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px' }}
+          style={{
+            padding: '10px 14px',
+            borderRadius: '10px',
+            border: '1px solid rgba(0,242,254,0.3)',
+            background: '#0a0d14',
+            color: '#f0f0f0',
+            minWidth: '240px',
+            fontSize: '0.95rem',
+            outline: 'none',
+            fontFamily: 'inherit',
+          }}
+          autoFocus
         />
       )}
-      <button onClick={handleSave} disabled={saving} style={{ padding: '4px 12px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        {saving ? 'Saving…' : 'Save'}
-      </button>
-      <button onClick={() => { setEditing(false); setValue(initialValue); }} style={{ padding: '4px 12px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        Cancel
-      </button>
+      <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            padding: '10px 18px',
+            background: saving ? '#00f2fe88' : '#00f2fe',
+            color: '#000',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: saving ? 'not-allowed' : 'pointer',
+            fontWeight: '700',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          {saving ? '⏳' : '💾'} {saving ? 'Saving' : 'Save'}
+        </button>
+        <button
+          onClick={() => { setEditing(false); setValue(initialValue); }}
+          style={{
+            padding: '10px 14px',
+            background: 'transparent',
+            color: '#f44336',
+            border: '1px solid #f44336',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontWeight: '700',
+            fontSize: '0.85rem',
+          }}
+        >
+          ✕ Cancel
+        </button>
+      </span>
     </span>
   );
 }
