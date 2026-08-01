@@ -6,12 +6,10 @@ async function getAuthenticatedClient(req: Request) {
   const tokenCookie = cookieHeader
     .split('; ')
     .find(c => c.startsWith('sb-') && c.includes('-auth-token'));
-  
   if (!tokenCookie) return null;
   const tokenValue = tokenCookie.split('=')[1];
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  
   return createClient(supabaseUrl, supabaseKey, {
     global: { headers: { Authorization: `Bearer ${tokenValue}` } }
   });
@@ -20,7 +18,6 @@ async function getAuthenticatedClient(req: Request) {
 export async function GET(req: Request) {
   const supabase = await getAuthenticatedClient(req);
   if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -31,7 +28,6 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const supabase = await getAuthenticatedClient(req);
   if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
