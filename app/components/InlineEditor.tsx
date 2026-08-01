@@ -29,14 +29,15 @@ export default function InlineEditor({ sectionKey, field, initialValue, type = '
           content: { [field]: value },
         }),
       });
+      const data = await res.json();
       if (res.ok) {
         setEditing(false);
         if (onSave) onSave();
       } else {
-        alert('Failed to save');
+        alert('Failed to save: ' + (data.error || 'Unknown error'));
       }
     } catch (err) {
-      alert('Network error');
+      alert('Network error. Please try again.');
     } finally {
       setSaving(false);
     }
