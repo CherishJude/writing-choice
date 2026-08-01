@@ -51,6 +51,12 @@ export default function Home() {
 
   // ----- Dynamic Page Content (editable by admin) -----
   const [pageData, setPageData] = useState<any>({});
+const [reviews, setReviews] = useState<any[]>([]);
+const [showReviewModal, setShowReviewModal] = useState(false);
+const [reviewRating, setReviewRating] = useState(0);
+const [reviewText, setReviewText] = useState('');
+const [reviewSubmitting, setReviewSubmitting] = useState(false);
+const [reviewMessage, setReviewMessage] = useState('');
 
   const accentColors: { [key: string]: { name: string; hex: string } } = {
     default: { name: 'Default Cyan', hex: '#00f2fe' },
@@ -150,6 +156,17 @@ export default function Home() {
       }
     };
     fetchPageData();
+
+    const fetchReviews = async () => {
+  try {
+    const res = await fetch('/api/reviews');
+    const data = await res.json();
+    if (data.reviews) setReviews(data.reviews);
+  } catch (err) {
+    console.error('Failed to load reviews:', err);
+  }
+};
+fetchReviews();
 
     return () => clearInterval(interval);
   }, []);
@@ -375,12 +392,22 @@ export default function Home() {
       }}>
         <div style={{ fontWeight: '800', fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b', flex: 1, minWidth: '120px' }}>
           {user ? (
-            <span style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor }}>
-              {displayName}
-            </span>
-          ) : (
-            'WritingChoice • Portal'
-          )}
+  <>
+    <span style={{ color: userRole === 'super_admin' ? '#ef4444' : accentColor }}>
+      {displayName}
+    </span>
+    <span style={{ marginLeft: '12px', fontSize: '0.8rem', color: isDark ? '#94a3b8' : '#64748b' }}>
+      {date}
+    </span>
+  </>
+) : (
+  <>
+    WritingChoice • Portal
+    <span style={{ marginLeft: '12px', fontSize: '0.8rem', color: isDark ? '#94a3b8' : '#64748b' }}>
+      {date}
+    </span>
+  </>
+)}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -852,7 +879,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ===== CLIENT TESTIMONIALS SECTION ===== */}
+                {/* ===== CLIENT TESTIMONIALS SECTION ===== */}
         <section style={{ maxWidth: '1000px', margin: '50px auto 40px auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <span style={{ color: accentColor, textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '800', fontSize: '0.8rem' }}>
@@ -864,65 +891,193 @@ export default function Home() {
           </div>
 
           <div className="responsive-grid">
-            {[
-              {
-                text: 'My 15,000-word dissertation was delivered two days before the deadline. The Turnitin report showed 4% similarity. My supervisor was impressed with the structure. Worth every kobo.',
-                name: 'Adaeze O.',
-                role: 'MSc Student • University of Lagos',
-                avatar: 'A'
-              },
-              {
-                text: 'I needed a Python data analysis project with documentation. Cherish delivered clean, commented code with a full README. I submitted it with confidence. Absolutely professional.',
-                name: 'Emmanuel T.',
-                role: 'BSc Computer Science • UNIABUJA',
-                avatar: 'E'
-              },
-              {
-                text: 'Used WritingChoice for a business proposal and a research article. Both were delivered on time, well-referenced, and required zero corrections. My go-to writing service now.',
-                name: 'Funmilayo B.',
-                role: 'Entrepreneur • Lagos',
-                avatar: 'F'
-              }
-            ].map((item, idx) => (
-              <div key={idx} style={surfaceCardStyle} className="glass-card">
-                <div style={{ padding: '24px', position: 'relative' }}>
-                  <div style={{ color: '#ffbf00', fontSize: '1rem', marginBottom: '10px' }}>
-                    ★★★★★
-                  </div>
-                  <p style={{
-                    color: isDark ? '#f8fafc' : '#0f172a',
-                    fontSize: '0.9rem',
-                    lineHeight: '1.7',
-                    fontStyle: 'italic',
-                    marginBottom: '16px'
-                  }}>
-                    "{item.text}"
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${accentColor}, #000)`,
-                      color: '#fff',
-                      fontWeight: '800',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.95rem'
-                    }}>
-                      {item.avatar}
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div key={review.id} style={surfaceCardStyle} className="glass-card">
+                  <div style={{ padding: '24px', position: 'relative' }}>
+                    <div style={{ color: '#ffbf00', fontSize: '1rem', marginBottom: '10px' }}>
+                      {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                     </div>
-                    <div>
-                      <div style={{ fontWeight: '800', fontSize: '0.9rem', color: accentColor }}>{item.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>{item.role}</div>
+                    <p style={{
+                      color: isDark ? '#f8fafc' : '#0f172a',
+                      fontSize: '0.9rem',
+                      lineHeight: '1.7',
+                      fontStyle: 'italic',
+                      marginBottom: '16px'
+                    }}>
+                      "{review.review_text || 'No comment'}"
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${accentColor}, #000)`,
+                        color: '#fff',
+                        fontWeight: '800',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.95rem'
+                      }}>
+                        {review.user_email?.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '0.9rem', color: accentColor }}>
+                          {review.user_email}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div style={{ padding: '24px', textAlign: 'center', color: isDark ? '#94a3b8' : '#64748b', gridColumn: '1 / -1' }}>
+                No reviews yet. Be the first to share your experience!
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Share Your Experience button */}
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <button
+              onClick={() => setShowReviewModal(true)}
+              style={{
+                padding: '12px 24px',
+                borderRadius: '30px',
+                background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`,
+                color: '#000',
+                border: 'none',
+                fontWeight: '800',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                boxShadow: `0 4px 15px ${accentColor}33`,
+              }}
+            >
+              ✍️ Share Your Experience
+            </button>
           </div>
         </section>
+
+        {/* ===== REVIEW MODAL ===== */}
+        {showReviewModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, width: '100%', height: '100%',
+            background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(20px)',
+            zIndex: 20001,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px'
+          }}>
+            <div style={{
+              maxWidth: '500px', width: '100%',
+              background: isDark ? '#0a0d14' : '#ffffff',
+              border: `2px solid ${accentColor}`,
+              borderRadius: '24px',
+              padding: '32px',
+              color: isDark ? '#f0f0f0' : '#0f172a',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ margin: 0, color: accentColor }}>⭐ Rate Your Experience</h2>
+                <button onClick={() => setShowReviewModal(false)}
+                  style={{ background: 'transparent', border: 'none', color: accentColor, fontSize: '1.5rem', cursor: 'pointer' }}>
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Your Rating</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[1,2,3,4,5].map(star => (
+                    <span key={star}
+                      onClick={() => setReviewRating(star)}
+                      style={{
+                        fontSize: '2rem',
+                        cursor: 'pointer',
+                        color: star <= reviewRating ? '#ffbf00' : '#ccc',
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Your Opinion (optional)</label>
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: isDark ? '#000' : '#fff',
+                    border: `1px solid ${accentColor}`,
+                    color: isDark ? '#fff' : '#000',
+                    borderRadius: '12px',
+                    outline: 'none',
+                  }}
+                  placeholder="Tell us about your experience..."
+                />
+              </div>
+
+              {reviewMessage && <p style={{ color: '#25d366', marginBottom: '12px' }}>{reviewMessage}</p>}
+
+              <button
+                onClick={async () => {
+                  if (reviewRating === 0) {
+                    alert('Please select a rating.');
+                    return;
+                  }
+                  setReviewSubmitting(true);
+                  const res = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: reviewRating, review_text: reviewText }),
+                  });
+                  const data = await res.json();
+                  setReviewSubmitting(false);
+                  if (data.success) {
+                    setReviewMessage('Thank you for your review!');
+                    setReviewRating(0);
+                    setReviewText('');
+                    // Refresh reviews
+                    const refresh = await fetch('/api/reviews');
+                    const refreshed = await refresh.json();
+                    if (refreshed.reviews) setReviews(refreshed.reviews);
+                    setTimeout(() => setShowReviewModal(false), 1500);
+                  } else {
+                    alert('Error: ' + data.error);
+                  }
+                }}
+                disabled={reviewSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '30px',
+                  background: '#25d366',
+                  color: '#fff',
+                  border: 'none',
+                  fontWeight: '800',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
+                  opacity: reviewSubmitting ? 0.6 : 1,
+                }}
+              >
+                {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ===== 4 MAJOR BLOGGER SECTIONS RIGHT UNDER WHAT OUR CLIENTS SAY ===== */}
         <section style={{ maxWidth: '1000px', margin: '0 auto 50px auto', padding: '0 20px' }}>
