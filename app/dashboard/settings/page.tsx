@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [textSize, setTextSize] = useState('medium');
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -17,18 +18,29 @@ export default function SettingsPage() {
           setDisplayName(data.settings.display_name || '');
           setTextSize(data.settings.text_size || 'medium');
         }
-      });
+      })
+      .catch(err => console.error('Failed to load settings', err));
   }, []);
 
   const saveSettings = async () => {
     setSaving(true);
-    await fetch('/api/user/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ settings: { display_name: displayName, text_size: textSize } })
-    });
-    setSaving(false);
-    alert('Settings saved!');
+    setMessage('');
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: { display_name: displayName, text_size: textSize } })
+      });
+      if (res.ok) {
+        setMessage('✅ Settings saved!');
+      } else {
+        setMessage('❌ Error saving settings.');
+      }
+    } catch (err) {
+      setMessage('❌ Network error.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -69,6 +81,7 @@ export default function SettingsPage() {
           <option value="large">Large</option>
         </select>
       </div>
+      {message && <p style={{ margin: '10px 0', color: message.includes('✅') ? '#4CAF50' : '#f44336' }}>{message}</p>}
       <button
         onClick={saveSettings}
         disabled={saving}

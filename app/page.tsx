@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ChatWidget from '@/app/components/ChatWidget';
+import InlineEditor from '@/app/components/InlineEditor';
 
 export default function Home() {
   const router = useRouter();
@@ -463,7 +464,32 @@ fetchReviews();
             margin: '10px 0 20px 0',
             color: isDark ? '#ffffff' : '#0f172a',
           }}>
-            {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+            {userRole === 'super_admin' ? (
+  <InlineEditor
+    sectionKey="hero"
+    field="title"
+    initialValue={pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+    style={{ fontSize: 'clamp(2rem, 5.5vw, 3.8rem)', fontWeight: '900', letterSpacing: '-1.5px', lineHeight: '1.15', color: isDark ? '#ffffff' : '#0f172a' }}
+    onSave={() => {
+      // Refresh pageData after save
+      fetch('/api/admin/page-sections')
+        .then(res => res.json())
+        .then(data => {
+          const map: any = {};
+          data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+          setPageData(map);
+        });
+    }}
+  >
+    <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.8rem)', fontWeight: '900', letterSpacing: '-1.5px', lineHeight: '1.15', margin: '10px 0 20px 0', color: isDark ? '#ffffff' : '#0f172a' }}>
+      {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+    </h1>
+  </InlineEditor>
+) : (
+  <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.8rem)', fontWeight: '900', letterSpacing: '-1.5px', lineHeight: '1.15', margin: '10px 0 20px 0', color: isDark ? '#ffffff' : '#0f172a' }}>
+    {pageData.hero?.title || 'Elevate Your Academic & Professional Research'}
+  </h1>
+)}
           </h1>
 
           <p style={{
@@ -473,21 +499,70 @@ fetchReviews();
             color: isDark ? '#94a3b8' : '#475569',
             lineHeight: '1.7',
           }}>
-            {pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}
+            {userRole === 'super_admin' ? (
+  <InlineEditor
+    sectionKey="hero"
+    field="subtitle"
+    type="textarea"
+    initialValue={pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}
+    onSave={async () => {
+      const res = await fetch('/api/admin/page-sections');
+      const data = await res.json();
+      const map: any = {};
+      data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+      setPageData(map);
+    }}
+  >
+    <span>{pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}</span>
+  </InlineEditor>
+) : (
+  <>{pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}</>
+)}
+<strong style={{ color: accentColor }}>Cherish SI</strong>.
             <strong style={{ color: accentColor }}>Cherish SI</strong>.
           </p>
         </section>
 
         {/* ===== LED SCROLLING TICKER (BLOGGER MATRIX SCANLINE) ===== */}
-        <div style={{ maxWidth: '1000px', margin: '15px auto 15px auto', padding: '0 20px' }}>
+                <div style={{ maxWidth: '1000px', margin: '15px auto 15px auto', padding: '0 20px' }}>
           <div className="led-bar">
             <div className="led-scroll">
-              <span className="led-text">
-                {pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
-              </span>
-              <span className="led-text">
-                {pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
-              </span>
+              {userRole === 'super_admin' ? (
+                <InlineEditor
+                  sectionKey="led_ticker"
+                  field="text"
+                  initialValue={pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
+                  onSave={async () => {
+                    const res = await fetch('/api/admin/page-sections');
+                    const data = await res.json();
+                    const map: any = {};
+                    data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+                    setPageData(map);
+                  }}
+                >
+                  <span className="led-text">{pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}</span>
+                </InlineEditor>
+              ) : (
+                <span className="led-text">{pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}</span>
+              )}
+              {userRole === 'super_admin' ? (
+                <InlineEditor
+                  sectionKey="led_ticker"
+                  field="text"
+                  initialValue={pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}
+                  onSave={async () => {
+                    const res = await fetch('/api/admin/page-sections');
+                    const data = await res.json();
+                    const map: any = {};
+                    data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+                    setPageData(map);
+                  }}
+                >
+                  <span className="led-text">{pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}</span>
+                </InlineEditor>
+              ) : (
+                <span className="led-text">{pageData.led_ticker?.text || 'Project • Article • Essay • Dissertation • PowerPoint • Programming • Research Proposal • Analysis • Literature Review • Case Study'}</span>
+              )}
             </div>
           </div>
         </div>
@@ -513,16 +588,59 @@ fetchReviews();
           </div>
         </div>
 
-        {/* ===== WRITINGCHOICE WELCOME NOTE (EXACT BLOGGER COPY) ===== */}
+                {/* ===== WRITINGCHOICE WELCOME NOTE (EXACT BLOGGER COPY) ===== */}
         <section style={{ maxWidth: '1000px', margin: '0 auto 35px auto', padding: '0 20px' }}>
           <div style={surfaceCardStyle} className="glass-card">
             <div style={{ padding: '30px 26px' }}>
-              <h2 style={{ color: accentColor, margin: '0 0 12px 0', fontSize: '1.6rem', fontWeight: '800' }}>
-                {pageData.welcome?.title || '✨ Welcome to WritingChoice'}
-              </h2>
-              <p style={{ color: isDark ? '#f0f0f0' : '#0f172a', lineHeight: '1.8', fontSize: '1rem', margin: 0 }}>
-                {pageData.welcome?.text || `Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, or a professional needing a flawless document, WritingChoice is built for you. Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools to deliver 100% human-written, plagiarism-free academic and professional work. We believe quality writing should be accessible, affordable, and stress-free. Take a deep breath 😤 you're in the right place. 😮‍💨`}
-              </p>
+              
+              {/* Welcome Title – editable by admin */}
+              {userRole === 'super_admin' ? (
+                <InlineEditor
+                  sectionKey="welcome"
+                  field="title"
+                  initialValue={pageData.welcome?.title || '✨ Welcome to WritingChoice'}
+                  onSave={async () => {
+                    const res = await fetch('/api/admin/page-sections');
+                    const data = await res.json();
+                    const map: any = {};
+                    data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+                    setPageData(map);
+                  }}
+                >
+                  <h2 style={{ color: accentColor, margin: '0 0 12px 0', fontSize: '1.6rem', fontWeight: '800' }}>
+                    {pageData.welcome?.title || '✨ Welcome to WritingChoice'}
+                  </h2>
+                </InlineEditor>
+              ) : (
+                <h2 style={{ color: accentColor, margin: '0 0 12px 0', fontSize: '1.6rem', fontWeight: '800' }}>
+                  {pageData.welcome?.title || '✨ Welcome to WritingChoice'}
+                </h2>
+              )}
+
+              {/* Welcome Text – editable by admin, uses textarea for longer content */}
+              {userRole === 'super_admin' ? (
+                <InlineEditor
+                  sectionKey="welcome"
+                  field="text"
+                  type="textarea"
+                  initialValue={pageData.welcome?.text || `Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, or a professional needing a flawless document, WritingChoice is built for you. Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools to deliver 100% human-written, plagiarism-free academic and professional work. We believe quality writing should be accessible, affordable, and stress-free. Take a deep breath 😤 you're in the right place. 😮‍💨`}
+                  onSave={async () => {
+                    const res = await fetch('/api/admin/page-sections');
+                    const data = await res.json();
+                    const map: any = {};
+                    data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+                    setPageData(map);
+                  }}
+                >
+                  <p style={{ color: isDark ? '#f0f0f0' : '#0f172a', lineHeight: '1.8', fontSize: '1rem', margin: 0 }}>
+                    {pageData.welcome?.text || `Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, or a professional needing a flawless document, WritingChoice is built for you. Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools to deliver 100% human-written, plagiarism-free academic and professional work. We believe quality writing should be accessible, affordable, and stress-free. Take a deep breath 😤 you're in the right place. 😮‍💨`}
+                  </p>
+                </InlineEditor>
+              ) : (
+                <p style={{ color: isDark ? '#f0f0f0' : '#0f172a', lineHeight: '1.8', fontSize: '1rem', margin: 0 }}>
+                  {pageData.welcome?.text || `Hello and welcome! Whether you're a student racing against a deadline, a researcher polishing a proposal, or a professional needing a flawless document, WritingChoice is built for you. Our platform combines expert human writers, a powerful AI assistant (Cherish SI), and a suite of smart tools to deliver 100% human-written, plagiarism-free academic and professional work. We believe quality writing should be accessible, affordable, and stress-free. Take a deep breath 😤 you're in the right place. 😮‍💨`}
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -534,7 +652,28 @@ fetchReviews();
               STRICTLY ENFORCED PRICING
             </span>
             <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
-              {pageData.pricing?.title || 'Choose Your Preferred Quality Tier'}
+              {userRole === 'super_admin' ? (
+  <InlineEditor
+    sectionKey="pricing"
+    field="title"
+    initialValue={pageData.pricing?.title || 'Choose Your Preferred Quality Tier'}
+    onSave={async () => {
+      const res = await fetch('/api/admin/page-sections');
+      const data = await res.json();
+      const map: any = {};
+      data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+      setPageData(map);
+    }}
+  >
+    <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
+      {pageData.pricing?.title || 'Choose Your Preferred Quality Tier'}
+    </h2>
+  </InlineEditor>
+) : (
+  <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
+    {pageData.pricing?.title || 'Choose Your Preferred Quality Tier'}
+  </h2>
+)}
             </h2>
           </div>
 
@@ -1261,7 +1400,28 @@ fetchReviews();
               HELP CENTER
             </span>
             <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
-              {pageData.faq?.title || 'Frequently Asked Questions'}
+              {userRole === 'super_admin' ? (
+  <InlineEditor
+    sectionKey="faq"
+    field="title"
+    initialValue={pageData.faq?.title || 'Frequently Asked Questions'}
+    onSave={async () => {
+      const res = await fetch('/api/admin/page-sections');
+      const data = await res.json();
+      const map: any = {};
+      data.sections?.forEach((s: any) => { map[s.section_key] = s.content; });
+      setPageData(map);
+    }}
+  >
+    <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
+      {pageData.faq?.title || 'Frequently Asked Questions'}
+    </h2>
+  </InlineEditor>
+) : (
+  <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '6px 0 0 0', color: isDark ? '#fff' : '#0f172a' }}>
+    {pageData.faq?.title || 'Frequently Asked Questions'}
+  </h2>
+)}
             </h2>
           </div>
 

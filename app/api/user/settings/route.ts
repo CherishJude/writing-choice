@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET() {
+async function getAuthenticatedClient(req: Request) {
+  const cookieHeader = req.headers.get('cookie') || '';
+  const tokenCookie = cookieHeader
+    .split('; ')
+    .find(c => c.startsWith('sb-') && c.includes('-auth-token'));
+  
+  if (!tokenCookie) return null;
+  const tokenValue = tokenCookie.split('=')[1];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  
+  return createClient(supabaseUrl, supabaseKey, {
+    global: { headers: { Authorization: `Bearer ${tokenValue}` } }
+  });
+}
+
+export async function GET(req: Request) {
+  const supabase = await getAuthenticatedClient(req);
+  if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -10,10 +29,13 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const { settings } = await req.json();
+  const supabase = await getAuthenticatedClient(req);
+  if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { settings } = await req.json();
   const { error } = await supabase.from('members').update({ settings }).eq('email', user.email);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
