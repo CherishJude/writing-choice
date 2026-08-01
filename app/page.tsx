@@ -57,6 +57,7 @@ const [reviewRating, setReviewRating] = useState(0);
 const [reviewText, setReviewText] = useState('');
 const [reviewSubmitting, setReviewSubmitting] = useState(false);
 const [reviewMessage, setReviewMessage] = useState('');
+const [showAllReviews, setShowAllReviews] = useState(false);
 
   const accentColors: { [key: string]: { name: string; hex: string } } = {
     default: { name: 'Default Cyan', hex: '#00f2fe' },
@@ -879,7 +880,7 @@ fetchReviews();
           </div>
         </section>
 
-                {/* ===== CLIENT TESTIMONIALS SECTION ===== */}
+                        {/* ===== CLIENT TESTIMONIALS SECTION ===== */}
         <section style={{ maxWidth: '1000px', margin: '50px auto 40px auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <span style={{ color: accentColor, textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '800', fontSize: '0.8rem' }}>
@@ -892,7 +893,7 @@ fetchReviews();
 
           <div className="responsive-grid">
             {reviews.length > 0 ? (
-              reviews.map((review) => (
+              (showAllReviews ? reviews : reviews.slice(0, 3)).map((review) => (
                 <div key={review.id} style={surfaceCardStyle} className="glass-card">
                   <div style={{ padding: '24px', position: 'relative' }}>
                     <div style={{ color: '#ffbf00', fontSize: '1rem', marginBottom: '10px' }}>
@@ -940,6 +941,47 @@ fetchReviews();
               </div>
             )}
           </div>
+
+          {/* Show More / Show Less button */}
+          {reviews.length > 3 && (
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button
+                onClick={() => setShowAllReviews(!showAllReviews)}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '30px',
+                  background: 'transparent',
+                  border: `1px solid ${accentColor}`,
+                  color: accentColor,
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {showAllReviews ? 'Show Less Reviews ▲' : `Show All ${reviews.length} Reviews ▼`}
+              </button>
+            </div>
+          )}
+
+          {reviews.length > 3 && (
+  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+    <button
+      onClick={() => setShowAllReviews(!showAllReviews)}
+      style={{
+        padding: '10px 24px',
+        borderRadius: '30px',
+        background: 'transparent',
+        border: `1px solid ${accentColor}`,
+        color: accentColor,
+        fontWeight: '800',
+        fontSize: '0.85rem',
+        cursor: 'pointer',
+      }}
+    >
+      {showAllReviews ? 'Show Less Reviews ▲' : `Show All ${reviews.length} Reviews ▼`}
+    </button>
+  </div>
+)}
 
           {/* Share Your Experience button */}
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
