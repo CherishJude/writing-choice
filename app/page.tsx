@@ -173,6 +173,34 @@ fetchReviews();
     return () => clearInterval(interval);
   }, []);
 
+    // Real-time updates for page sections
+  useEffect(() => {
+    const channel = supabase
+      .channel('page-sections-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'page_sections' },
+        (payload) => {
+          // Whenever a row changes, refresh the full page data
+          fetch('/api/admin/page-sections')
+            .then(res => res.json())
+            .then(data => {
+              const map: any = {};
+              data.sections?.forEach((s: any) => {
+                map[s.section_key] = s.content;
+              });
+              setPageData(map);
+            })
+            .catch(err => console.error('Realtime fetch error:', err));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Click outside listener for top menu dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -519,7 +547,6 @@ fetchReviews();
   <>{pageData.hero?.subtitle || `100% human-crafted research, dissertations, essays, and programming projects. Powered by vetted subject specialists and integrated with our AI assistant `}</>
 )}
 <strong style={{ color: accentColor }}>Cherish SI</strong>.
-            <strong style={{ color: accentColor }}>Cherish SI</strong>.
           </p>
         </section>
 
@@ -1101,26 +1128,6 @@ fetchReviews();
               </button>
             </div>
           )}
-
-          {reviews.length > 3 && (
-  <div style={{ textAlign: 'center', marginTop: '20px' }}>
-    <button
-      onClick={() => setShowAllReviews(!showAllReviews)}
-      style={{
-        padding: '10px 24px',
-        borderRadius: '30px',
-        background: 'transparent',
-        border: `1px solid ${accentColor}`,
-        color: accentColor,
-        fontWeight: '800',
-        fontSize: '0.85rem',
-        cursor: 'pointer',
-      }}
-    >
-      {showAllReviews ? 'Show Less Reviews ▲' : `Show All ${reviews.length} Reviews ▼`}
-    </button>
-  </div>
-)}
 
           {/* Share Your Experience button */}
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
