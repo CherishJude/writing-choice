@@ -1604,10 +1604,6 @@ export default function Home() {
         color: isDark ? '#94a3b8' : '#64748b',
       }}>
         <div>© {new Date().getFullYear()} WritingChoice • Cherish Jude. All Rights Reserved.</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#25d366' }} />
-          <span>Supabase Sync: Operational</span>
-        </div>
       </footer>
 
       {/* ===== CHAT WIDGET COMPONENT ===== */}
