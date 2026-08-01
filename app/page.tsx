@@ -1075,31 +1075,44 @@ fetchReviews();
 
               <button
                 onClick={async () => {
-                  if (reviewRating === 0) {
-                    alert('Please select a rating.');
-                    return;
-                  }
-                  setReviewSubmitting(true);
-                  const res = await fetch('/api/reviews', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rating: reviewRating, review_text: reviewText }),
-                  });
-                  const data = await res.json();
-                  setReviewSubmitting(false);
-                  if (data.success) {
-                    setReviewMessage('Thank you for your review!');
-                    setReviewRating(0);
-                    setReviewText('');
-                    // Refresh reviews
-                    const refresh = await fetch('/api/reviews');
-                    const refreshed = await refresh.json();
-                    if (refreshed.reviews) setReviews(refreshed.reviews);
-                    setTimeout(() => setShowReviewModal(false), 1500);
-                  } else {
-                    alert('Error: ' + data.error);
-                  }
-                }}
+  if (reviewRating === 0) {
+    alert('Please select a rating.');
+    return;
+  }
+  setReviewSubmitting(true);
+  // Insert directly via the browser's supabase client (already logged in)
+  const { error } = await supabase
+    .from('reviews')
+    .insert({
+      user_email: user?.email,   // <-- current user's email
+      rating: reviewRating,
+      review_text: reviewText,
+    });
+
+  if (error) {
+    alert('Error: ' + error.message);
+    setReviewSubmitting(false);
+    return;
+  }
+
+  setReviewMessage('Thank you for your review!');
+  setReviewRating(0);
+  setReviewText('');
+  setReviewSubmitting(false);
+
+  // Refresh the reviews list from the database
+  const { data: freshReviews } = await supabase
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (freshReviews) setReviews(freshReviews);
+
+  // Close the modal after 1.5 seconds
+  setTimeout(() => {
+    setShowReviewModal(false);
+    setReviewMessage('');
+  }, 1500);
+}}
                 disabled={reviewSubmitting}
                 style={{
                   width: '100%',
