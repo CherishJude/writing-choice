@@ -13,29 +13,34 @@ export default function SettingsPage() {
   const [message, setMessage] = useState('');
   const [userEmail, setUserEmail] = useState('');
 
-  // Load settings directly from Supabase
+  // Load settings securely via API to bypass RLS
   useEffect(() => {
     const loadSettings = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setUserEmail(user.email ?? '');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      setUserEmail(session.user.email ?? '');
 
-      const { data: member, error } = await supabase
-        .from('members')
-        .select('role, settings')
-        .eq('email', user.email)
-        .single();
-
-      if (!error && member) {
-        setUserRole(member.role || 'member');
-        if (member.settings) {
-          setDisplayName(member.settings.display_name || '');
-          setTextSize(member.settings.text_size || 'medium');
-          setFontFamily(member.settings.font_family || 'geist-sans');
-          if (member.settings.admin_edit_mode !== undefined) {
-            setAdminEditMode(member.settings.admin_edit_mode);
+      try {
+        const res = await fetch('/api/user/settings', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await res.json();
+        
+        if (res.ok && data) {
+          if (data.role) {
+            setUserRole(data.role);
+          }
+          if (data.settings) {
+            setDisplayName(data.settings.display_name || '');
+            setTextSize(data.settings.text_size || 'medium');
+            setFontFamily(data.settings.font_family || 'geist-sans');
+            if (data.settings.admin_edit_mode !== undefined) {
+              setAdminEditMode(data.settings.admin_edit_mode);
+            }
           }
         }
+      } catch (e) {
+        console.error("Failed to load settings", e);
       }
     };
     loadSettings();

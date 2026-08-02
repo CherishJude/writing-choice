@@ -55,8 +55,9 @@ export async function GET(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: member } = await supabase.from('members').select('settings').eq('email', user.email).single();
-  return NextResponse.json({ settings: member?.settings || {} });
+  const client = supabaseAdmin || supabase;
+  const { data: member } = await client.from('members').select('settings, role').eq('email', user.email).single();
+  return NextResponse.json({ settings: member?.settings || {}, role: member?.role || 'member' });
 }
 
 export async function PUT(req: Request) {
