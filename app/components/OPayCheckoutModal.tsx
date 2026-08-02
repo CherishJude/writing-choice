@@ -13,11 +13,8 @@ export default function OPayCheckoutModal({ finalPrice, wordCount, tierName, onC
 
   const handleConfirm = () => {
     setIsSubmitting(true);
-    // Simulate API call for now; in a real app, you'd insert the order into the DB here
-    setTimeout(() => {
-      onConfirm();
-      setIsSubmitting(false);
-    }, 1500);
+    onConfirm();
+    setIsSubmitting(false);
   };
 
   return (

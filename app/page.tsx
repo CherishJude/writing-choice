@@ -359,7 +359,8 @@ useEffect(() => {
   };
 
   const sendWhatsAppOrder = () => {
-    const message = `*NEW ORDER*%0A%0A` +
+    const message = `*NEW ORDER - WritingChoice*%0A%0A` +
+      `*Payment Status:* Transferred via OPay%0A` +
       `*Customer:* ${displayName || 'Guest'}%0A` +
       `*Service:* ${selectedSector || 'General Research'}%0A` +
       `*Brief File:* ${briefFileName || 'Attached / Provided via Chat'}%0A` +
@@ -1807,8 +1808,8 @@ useEffect(() => {
                 width: '100%',
                 padding: '14px',
                 borderRadius: '30px',
-                background: '#25d366',
-                color: '#fff',
+                background: 'var(--accent-color, #00f2fe)',
+                color: '#000',
                 border: 'none',
                 fontWeight: '800',
                 fontSize: '1rem',
@@ -1817,10 +1818,10 @@ useEffect(() => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
+                boxShadow: '0 4px 20px rgba(0, 242, 254, 0.4)',
               }}
             >
-              💬 Send Order to WhatsApp →
+              💳 Make Payment →
             </button>
           </div>
         </div>
@@ -2109,6 +2110,9 @@ useEffect(() => {
           tierName={selectedTierName}
           onClose={() => setShowOPayModal(false)}
           onConfirm={async () => {
+            // First send the WhatsApp message
+            sendWhatsAppOrder();
+
             // Save order to database
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
