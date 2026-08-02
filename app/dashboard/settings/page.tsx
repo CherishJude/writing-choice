@@ -61,6 +61,24 @@ export default function SettingsPage() {
       padding: '40px 20px',
     }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        {/* Back button – now inside the centered container */}
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--accent-color, #00f2fe)',
+            color: 'var(--accent-color, #00f2fe)',
+            padding: '8px 18px',
+            borderRadius: '30px',
+            cursor: 'pointer',
+            fontWeight: '700',
+            fontSize: '0.85rem',
+            marginBottom: '20px',
+          }}
+        >
+          ← Back
+        </button>
+
         <h1 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '10px', color: 'var(--accent-color, #00f2fe)' }}>
           ⚙️ Settings
         </h1>
