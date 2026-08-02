@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function GlobalSettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -41,7 +42,11 @@ export default function GlobalSettingsProvider({ children }: { children: React.R
       }
 
       // 2. Fetch fresh from API if logged in
-      fetch('/api/user/settings')
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        const token = session?.access_token;
+        fetch('/api/user/settings', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        })
         .then(res => {
           if (res.ok) return res.json();
           throw new Error('Not logged in or error');
@@ -56,6 +61,7 @@ export default function GlobalSettingsProvider({ children }: { children: React.R
           }
         })
         .catch(() => {});
+      });
     };
 
     // Load initially
