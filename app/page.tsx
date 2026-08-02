@@ -2111,7 +2111,8 @@ useEffect(() => {
       {/* OPay Checkout Modal */}
       {showOPayModal && (
         <OPayCheckoutModal 
-          finalPrice={Math.round(finalPrice * 0.6)} 
+          totalPrice={finalPrice}
+          depositAmount={Math.round(finalPrice * 0.6)} 
           wordCount={Number(wordCount) || 0}
           tierName={selectedTierName}
           onClose={() => setShowOPayModal(false)}

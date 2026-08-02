@@ -1,14 +1,15 @@
 import { useState } from 'react';
 
 interface OPayCheckoutModalProps {
-  finalPrice: number;
+  totalPrice: number;
+  depositAmount: number;
   wordCount: number;
   tierName: string;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-export default function OPayCheckoutModal({ finalPrice, wordCount, tierName, onClose, onConfirm }: OPayCheckoutModalProps) {
+export default function OPayCheckoutModal({ totalPrice, depositAmount, wordCount, tierName, onClose, onConfirm }: OPayCheckoutModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirm = () => {
@@ -66,9 +67,15 @@ export default function OPayCheckoutModal({ finalPrice, wordCount, tierName, onC
           marginBottom: '24px',
           border: '1px dashed var(--accent-color, #00f2fe)'
         }}>
-          <div style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '4px' }}>Amount to Transfer:</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--accent-color, #00f2fe)', marginBottom: '16px' }}>
-            ₦{finalPrice.toLocaleString()}
+          <div style={{ fontSize: '0.9rem', color: '#ffbf00', fontWeight: '800', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            60% Upfront Deposit
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--accent-color, #00f2fe)', marginBottom: '8px' }}>
+            ₦{depositAmount.toLocaleString()}
+          </div>
+          <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px' }}>
+            Total Price: <strong>₦{totalPrice.toLocaleString()}</strong><br/>
+            Remaining 40% Balance (<strong>₦{(totalPrice - depositAmount).toLocaleString()}</strong>) is due upon completion.
           </div>
           
           <div style={{ textAlign: 'left', background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px' }}>
@@ -104,7 +111,7 @@ export default function OPayCheckoutModal({ finalPrice, wordCount, tierName, onC
             transition: 'transform 0.2s, background 0.2s',
           }}
         >
-          {isSubmitting ? 'Processing...' : 'I Have Transferred ₦' + finalPrice.toLocaleString()}
+          {isSubmitting ? 'Processing...' : 'I Have Transferred ₦' + depositAmount.toLocaleString()}
         </button>
 
         <button
