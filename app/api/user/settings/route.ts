@@ -2,28 +2,40 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 async function getAuthenticatedClient(req: Request) {
-  const cookieHeader = req.headers.get('cookie') || '';
-  // Find the Supabase auth cookie (name like "sb-xxxxx-auth-token")
-  const tokenCookie = cookieHeader
-    .split('; ')
-    .find(c => c.startsWith('sb-') && c.includes('-auth-token'));
-
-  if (!tokenCookie) return null;
-
-  // Extract the cookie value (everything after the first '=')
-  const cookieValue = tokenCookie.split('=').slice(1).join('=');
-  if (!cookieValue) return null;
-
   let accessToken = '';
-  try {
-    // The cookie value is a base64‑encoded JSON string (URL‑safe).
-    // Convert URL‑safe base64 to standard base64, then decode.
-    const base64 = cookieValue.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = JSON.parse(atob(base64));
-    accessToken = decoded.access_token;
-  } catch {
-    // Fallback: try using the raw cookie value as the token directly
-    accessToken = cookieValue;
+
+  // 1. ADDITION: Check for an Authorization header first.
+  // This handles frontend fetch calls passing the token directly via headers.
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    accessToken = authHeader.split(' ')[1];
+  } else {
+    // 2. ORIGINAL LOGIC: Fallback to reading the cookie
+    const cookieHeader = req.headers.get('cookie') || '';
+    // Find the Supabase auth cookie (name like "sb-xxxxx-auth-token")
+    const tokenCookie = cookieHeader
+      .split('; ')
+      .find(c => c.startsWith('sb-') && c.includes('-auth-token'));
+
+    if (!tokenCookie) return null;
+
+    // Extract the cookie value (everything after the first '=')
+    let cookieValue = tokenCookie.split('=').slice(1).join('=');
+    if (!cookieValue) return null;
+
+    // 3. ADDITION: Decode the URI component to restore any URL-encoded characters (like %3D to =)
+    cookieValue = decodeURIComponent(cookieValue);
+
+    try {
+      // The cookie value is a base64‑encoded JSON string (URL‑safe).
+      // Convert URL‑safe base64 to standard base64, then decode.
+      const base64 = cookieValue.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = JSON.parse(atob(base64));
+      accessToken = decoded.access_token;
+    } catch {
+      // Fallback: try using the raw cookie value as the token directly
+      accessToken = cookieValue;
+    }
   }
 
   if (!accessToken) return null;

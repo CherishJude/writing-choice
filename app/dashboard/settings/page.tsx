@@ -1,43 +1,49 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function SettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [textSize, setTextSize] = useState('medium');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const router = useRouter();
+  const [userEmail, setUserEmail] = useState('');
 
-  // Load settings on mount
+  // Load settings directly from Supabase
   useEffect(() => {
-    fetch('/api/user/settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.settings) {
-          setDisplayName(data.settings.display_name || '');
-          setTextSize(data.settings.text_size || 'medium');
-        }
-      })
-      .catch(err => console.error('Failed to load settings', err));
+    const loadSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserEmail(user.email ?? '');
+
+      const { data: member, error } = await supabase
+        .from('members')
+        .select('settings')
+        .eq('email', user.email)
+        .single();
+
+      if (!error && member?.settings) {
+        setDisplayName(member.settings.display_name || '');
+        setTextSize(member.settings.text_size || 'medium');
+      }
+    };
+    loadSettings();
   }, []);
 
-  // Save settings
   const saveSettings = async () => {
     setSaving(true);
     setMessage('');
     try {
-      const res = await fetch('/api/user/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings: { display_name: displayName, text_size: textSize } })
-      });
-      if (res.ok) {
-        setMessage('✅ Settings saved!');
+      const { error } = await supabase
+        .from('members')
+        .update({ settings: { display_name: displayName, text_size: textSize } })
+        .eq('email', userEmail);
+
+      if (error) {
+        setMessage('❌ ' + error.message);
       } else {
-        const data = await res.json();
-        setMessage('❌ ' + (data.error || 'Error saving settings.'));
+        setMessage('✅ Settings saved!');
       }
     } catch (err) {
       setMessage('❌ Network error.');
@@ -62,7 +68,6 @@ export default function SettingsPage() {
           Personalise your experience. Changes are saved automatically to your account.
         </p>
 
-        {/* Display Name */}
         <div style={{
           background: 'var(--surface-card, rgba(255,255,255,0.04))',
           borderRadius: '16px',
@@ -70,7 +75,7 @@ export default function SettingsPage() {
           marginBottom: '16px',
           border: '1px solid var(--surface-border, rgba(255,255,255,0.08))',
         }}>
-          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '8px', color: 'var(--text-primary, #f0f0f0)' }}>
+          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '8px' }}>
             Display Name
           </label>
           <input
@@ -91,7 +96,6 @@ export default function SettingsPage() {
           />
         </div>
 
-        {/* Text Size */}
         <div style={{
           background: 'var(--surface-card, rgba(255,255,255,0.04))',
           borderRadius: '16px',
@@ -99,7 +103,7 @@ export default function SettingsPage() {
           marginBottom: '16px',
           border: '1px solid var(--surface-border, rgba(255,255,255,0.08))',
         }}>
-          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '8px', color: 'var(--text-primary, #f0f0f0)' }}>
+          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '8px' }}>
             Text Size
           </label>
           <select
@@ -122,7 +126,6 @@ export default function SettingsPage() {
           </select>
         </div>
 
-        {/* Save button */}
         <button
           onClick={saveSettings}
           disabled={saving}
