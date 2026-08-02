@@ -59,6 +59,7 @@ const [reviewText, setReviewText] = useState('');
 const [reviewSubmitting, setReviewSubmitting] = useState(false);
 const [reviewMessage, setReviewMessage] = useState('');
 const [showAllReviews, setShowAllReviews] = useState(false);
+const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
 
   const accentColors: { [key: string]: { name: string; hex: string } } = {
     default: { name: 'Default Cyan', hex: '#00f2fe' },
@@ -200,6 +201,33 @@ fetchReviews();
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Listen for settings updates from other pages (e.g. Settings page)
+useEffect(() => {
+  const handleSettingsUpdate = () => {
+    // Re-run checkUser to refresh displayName etc.
+    const refetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('role, display_name')
+          .eq('email', user.email)
+          .single();
+        if (member) {
+          setUserRole(member.role as 'super_admin' | 'moderator' | 'member');
+          if (member.display_name) {
+            setDisplayName(member.display_name);
+          }
+        }
+      }
+    };
+    refetchUser();
+  };
+
+  window.addEventListener('userSettingsUpdated', handleSettingsUpdate);
+  return () => window.removeEventListener('userSettingsUpdated', handleSettingsUpdate);
+}, []);
 
   // Click outside listener for top menu dropdown
   useEffect(() => {
@@ -1058,55 +1086,115 @@ fetchReviews();
           </div>
 
           <div className="responsive-grid">
-            {reviews.length > 0 ? (
-              (showAllReviews ? reviews : reviews.slice(0, 3)).map((review) => (
-                <div key={review.id} style={surfaceCardStyle} className="glass-card">
-                  <div style={{ padding: '24px', position: 'relative' }}>
-                    <div style={{ color: '#ffbf00', fontSize: '1rem', marginBottom: '10px' }}>
-                      {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
-                    </div>
-                    <p style={{
-                      color: isDark ? '#f8fafc' : '#0f172a',
-                      fontSize: '0.9rem',
-                      lineHeight: '1.7',
-                      fontStyle: 'italic',
-                      marginBottom: '16px'
-                    }}>
-                      "{review.review_text || 'No comment'}"
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${accentColor}, #000)`,
-                        color: '#fff',
-                        fontWeight: '800',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.95rem'
-                      }}>
-                        {review.user_email?.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: '800', fontSize: '0.9rem', color: accentColor }}>
-                          {review.user_email}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>
-                          {new Date(review.created_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div style={{ padding: '24px', textAlign: 'center', color: isDark ? '#94a3b8' : '#64748b', gridColumn: '1 / -1' }}>
-                No reviews yet. Be the first to share your experience!
-              </div>
-            )}
+  {reviews.length > 0 ? (
+    (showAllReviews ? reviews : reviews.slice(0, 3)).map((review) => (
+      <div key={review.id} style={surfaceCardStyle} className="glass-card">
+        <div style={{ padding: '24px', position: 'relative' }}>
+          
+          {/* Delete button – only for super admin */}
+          {userRole === 'super_admin' && (
+            <button
+              onClick={async () => {
+                if (!confirm('Delete this review?')) return;
+                const { error } = await supabase
+                  .from('reviews')
+                  .delete()
+                  .eq('id', review.id);
+                if (!error) {
+                  setReviews(prev => prev.filter(r => r.id !== review.id));
+                } else {
+                  alert('Failed to delete: ' + error.message);
+                }
+              }}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'transparent',
+                border: 'none',
+                color: '#ef4444',
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                zIndex: 2,
+              }}
+              title="Delete review"
+            >
+              🗑️
+            </button>
+          )}
+
+          {/* Edit button – only for the review author */}
+          {user?.email === review.user_email && (
+            <button
+              onClick={() => {
+                setEditingReviewId(review.id);
+                setReviewRating(review.rating);
+                setReviewText(review.review_text || '');
+                setShowReviewModal(true);
+              }}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: userRole === 'super_admin' ? '45px' : '10px',
+                background: 'transparent',
+                border: 'none',
+                color: accentColor,
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                zIndex: 2,
+              }}
+              title="Edit your review"
+            >
+              ✏️
+            </button>
+          )}
+
+          <div style={{ color: '#ffbf00', fontSize: '1rem', marginBottom: '10px' }}>
+            {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
           </div>
+          <p style={{
+            color: isDark ? '#f8fafc' : '#0f172a',
+            fontSize: '0.9rem',
+            lineHeight: '1.7',
+            fontStyle: 'italic',
+            marginBottom: '16px'
+          }}>
+            "{review.review_text || 'No comment'}"
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${accentColor}, #000)`,
+              color: '#fff',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.95rem'
+            }}>
+              {review.user_email?.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style={{ fontWeight: '800', fontSize: '0.9rem', color: accentColor }}>
+                {review.user_email}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>
+                {new Date(review.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div style={{ padding: '24px', textAlign: 'center', color: isDark ? '#94a3b8' : '#64748b', gridColumn: '1 / -1' }}>
+      No reviews yet. Be the first to share your experience!
+    </div>
+  )}
+</div>
 
           {/* Show More / Show Less button */}
           {reviews.length > 3 && (
@@ -1173,11 +1261,19 @@ fetchReviews();
               boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: accentColor }}>⭐ Rate Your Experience</h2>
-                <button onClick={() => setShowReviewModal(false)}
-                  style={{ background: 'transparent', border: 'none', color: accentColor, fontSize: '1.5rem', cursor: 'pointer' }}>
-                  ✕
-                </button>
+                <h2 style={{ margin: 0, color: accentColor }}>
+  {editingReviewId ? '✏️ Edit Your Review' : '⭐ Rate Your Experience'}
+</h2>
+                <button onClick={() => {
+  setShowReviewModal(false);
+  setEditingReviewId(null);
+  setReviewRating(0);
+  setReviewText('');
+  setReviewMessage('');
+}}
+  style={{ background: 'transparent', border: 'none', color: accentColor, fontSize: '1.5rem', cursor: 'pointer' }}>
+  ✕
+</button>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
@@ -1226,38 +1322,55 @@ fetchReviews();
     return;
   }
   setReviewSubmitting(true);
-  // Insert directly via the browser's supabase client (already logged in)
-  const { error } = await supabase
-    .from('reviews')
-    .insert({
-      user_email: user?.email,   // <-- current user's email
-      rating: reviewRating,
-      review_text: reviewText,
-    });
+  try {
+    if (editingReviewId) {
+      // Update existing review
+      const { error } = await supabase
+        .from('reviews')
+        .update({ rating: reviewRating, review_text: reviewText })
+        .eq('id', editingReviewId);
+      if (error) {
+        alert('Error updating: ' + error.message);
+        setReviewSubmitting(false);
+        return;
+      }
+    } else {
+      // Insert new review
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          user_email: user?.email,
+          rating: reviewRating,
+          review_text: reviewText,
+        });
+      if (error) {
+        alert('Error: ' + error.message);
+        setReviewSubmitting(false);
+        return;
+      }
+    }
 
-  if (error) {
-    alert('Error: ' + error.message);
+    setReviewMessage(editingReviewId ? '✅ Review updated!' : 'Thank you for your review!');
+    setReviewRating(0);
+    setReviewText('');
+    setEditingReviewId(null);
     setReviewSubmitting(false);
-    return;
+
+    // Refresh reviews from DB
+    const { data: freshReviews } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (freshReviews) setReviews(freshReviews);
+
+    setTimeout(() => {
+      setShowReviewModal(false);
+      setReviewMessage('');
+    }, 1500);
+  } catch (err) {
+    alert('Network error.');
+    setReviewSubmitting(false);
   }
-
-  setReviewMessage('Thank you for your review!');
-  setReviewRating(0);
-  setReviewText('');
-  setReviewSubmitting(false);
-
-  // Refresh the reviews list from the database
-  const { data: freshReviews } = await supabase
-    .from('reviews')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (freshReviews) setReviews(freshReviews);
-
-  // Close the modal after 1.5 seconds
-  setTimeout(() => {
-    setShowReviewModal(false);
-    setReviewMessage('');
-  }, 1500);
 }}
                 disabled={reviewSubmitting}
                 style={{

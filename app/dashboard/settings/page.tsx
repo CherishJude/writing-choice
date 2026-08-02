@@ -35,15 +35,21 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage('');
     try {
+      // Update both settings JSON and the direct display_name column
       const { error } = await supabase
         .from('members')
-        .update({ settings: { display_name: displayName, text_size: textSize } })
+        .update({ 
+          settings: { display_name: displayName, text_size: textSize },
+          display_name: displayName  // This column is used by the header/sidebar directly
+        })
         .eq('email', userEmail);
 
       if (error) {
         setMessage('❌ ' + error.message);
       } else {
         setMessage('✅ Settings saved!');
+        // Notify the main page to refresh the display name everywhere
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated'));
       }
     } catch (err) {
       setMessage('❌ Network error.');
