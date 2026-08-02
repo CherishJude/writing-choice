@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 async function getAuthenticatedClient(req: Request) {
   let accessToken = '';
@@ -71,7 +72,8 @@ export async function PUT(req: Request) {
     updateData.display_name = settings.display_name;
   }
 
-  const { error } = await supabase.from('members').update(updateData).eq('email', user.email);
+  const client = supabaseAdmin || supabase;
+  const { error } = await client.from('members').update(updateData).eq('email', user.email);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
