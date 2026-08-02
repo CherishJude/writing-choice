@@ -7,6 +7,8 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [textSize, setTextSize] = useState('medium');
   const [fontFamily, setFontFamily] = useState('geist-sans');
+  const [adminEditMode, setAdminEditMode] = useState(true);
+  const [userRole, setUserRole] = useState('member');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -20,14 +22,20 @@ export default function SettingsPage() {
 
       const { data: member, error } = await supabase
         .from('members')
-        .select('settings')
+        .select('role, settings')
         .eq('email', user.email)
         .single();
 
-      if (!error && member?.settings) {
-        setDisplayName(member.settings.display_name || '');
-        setTextSize(member.settings.text_size || 'medium');
-        setFontFamily(member.settings.font_family || 'geist-sans');
+      if (!error && member) {
+        setUserRole(member.role || 'member');
+        if (member.settings) {
+          setDisplayName(member.settings.display_name || '');
+          setTextSize(member.settings.text_size || 'medium');
+          setFontFamily(member.settings.font_family || 'geist-sans');
+          if (member.settings.admin_edit_mode !== undefined) {
+            setAdminEditMode(member.settings.admin_edit_mode);
+          }
+        }
       }
     };
     loadSettings();
@@ -50,7 +58,8 @@ export default function SettingsPage() {
           settings: { 
             display_name: displayName, 
             text_size: textSize,
-            font_family: fontFamily
+            font_family: fontFamily,
+            admin_edit_mode: adminEditMode
           }
         })
       });
@@ -199,6 +208,62 @@ export default function SettingsPage() {
             <option value="comic-sans">Playful (Comic Sans)</option>
           </select>
         </div>
+
+        {userRole === 'super_admin' && (
+          <div style={{
+            background: 'var(--surface-card, rgba(255,255,255,0.04))',
+            borderRadius: '16px',
+            padding: '20px 24px',
+            marginBottom: '16px',
+            border: '1px solid var(--surface-border, rgba(255,255,255,0.08))',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '4px' }}>
+                Admin Edit Mode
+              </label>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary, #94a3b8)' }}>
+                Toggle OFF to view the site as a regular member.
+              </p>
+            </div>
+            <label style={{
+              position: 'relative',
+              display: 'inline-block',
+              width: '50px',
+              height: '28px'
+            }}>
+              <input 
+                type="checkbox" 
+                checked={adminEditMode}
+                onChange={(e) => setAdminEditMode(e.target.checked)}
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
+              <span style={{
+                position: 'absolute',
+                cursor: 'pointer',
+                top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: adminEditMode ? 'var(--accent-color, #00f2fe)' : '#334155',
+                transition: '.4s',
+                borderRadius: '34px'
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  content: '""',
+                  height: '20px',
+                  width: '20px',
+                  left: '4px',
+                  bottom: '4px',
+                  backgroundColor: adminEditMode ? '#000' : '#fff',
+                  transition: '.4s',
+                  borderRadius: '50%',
+                  transform: adminEditMode ? 'translateX(22px)' : 'translateX(0)'
+                }}></span>
+              </span>
+            </label>
+          </div>
+        )}
 
         <button
           onClick={saveSettings}

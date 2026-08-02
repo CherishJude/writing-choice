@@ -105,14 +105,18 @@ const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
         // Fetch member record from the database
         const { data: member } = await supabase
           .from('members')
-          .select('role, display_name')
+          .select('role, display_name, settings')
           .eq('email', user.email)
           .single();
 
         const emailPrefix = user.email ? user.email.split('@')[0] : 'User';
 
         if (member) {
-          setUserRole(member.role as 'super_admin' | 'moderator' | 'member');
+          let effectiveRole = member.role;
+          if (member.role === 'super_admin' && member.settings?.admin_edit_mode === false) {
+            effectiveRole = 'member';
+          }
+          setUserRole(effectiveRole as 'super_admin' | 'moderator' | 'member');
 
           if (member.display_name) {
             setDisplayName(member.display_name);
@@ -211,11 +215,15 @@ useEffect(() => {
       if (user) {
         const { data: member } = await supabase
           .from('members')
-          .select('role, display_name')
+          .select('role, display_name, settings')
           .eq('email', user.email)
           .single();
         if (member) {
-          setUserRole(member.role as 'super_admin' | 'moderator' | 'member');
+          let effectiveRole = member.role;
+          if (member.role === 'super_admin' && member.settings?.admin_edit_mode === false) {
+            effectiveRole = 'member';
+          }
+          setUserRole(effectiveRole as 'super_admin' | 'moderator' | 'member');
           if (member.display_name) {
             setDisplayName(member.display_name);
           }
