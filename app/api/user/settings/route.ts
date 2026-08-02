@@ -56,7 +56,18 @@ export async function GET(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const client = supabaseAdmin || supabase;
-  const { data: member } = await client.from('members').select('settings, role').eq('email', user.email).single();
+  let { data: member } = await client.from('members').select('settings, role').eq('email', user.email).single();
+
+  // If the user isn't in the members table yet, add them now!
+  if (!member && supabaseAdmin) {
+    await supabaseAdmin.from('members').insert({
+      email: user.email,
+      role: 'member',
+      settings: {}
+    });
+    member = { settings: {}, role: 'member' };
+  }
+
   return NextResponse.json({ settings: member?.settings || {}, role: member?.role || 'member' });
 }
 

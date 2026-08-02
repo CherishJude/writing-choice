@@ -31,6 +31,25 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 });
     }
 
+    // --- SYNC USERS ---
+    // Make sure all users in Supabase Auth exist in the members table
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
+    if (authData?.users) {
+      const { data: existingMembers } = await supabaseAdmin.from('members').select('email');
+      const existingEmails = new Set(existingMembers?.map((m: any) => m.email) || []);
+      
+      const missingUsers = authData.users.filter(u => u.email && !existingEmails.has(u.email));
+      
+      if (missingUsers.length > 0) {
+        const inserts = missingUsers.map(u => ({
+          email: u.email,
+          role: 'member',
+          settings: {}
+        }));
+        await supabaseAdmin.from('members').insert(inserts);
+      }
+    }
+
     // Fetch all required data using Admin Client to bypass RLS!
     const { data: userData } = await supabaseAdmin.from('members').select('*');
     const { data: msgData } = await supabaseAdmin.from('group_messages').select('*').order('timestamp', { ascending: false });
