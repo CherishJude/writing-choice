@@ -119,11 +119,29 @@ export default function AdminPage() {
     }
 
     const newRole = currentRole === 'moderator' ? 'member' : 'moderator';
-    const { error } = await supabase.from('members').update({ role: newRole }).eq('email', email);
-    if (error) {
+    
+    // Optimistic UI update
+    setUsers(users.map(u => u.email === email ? { ...u, role: newRole } : u));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not logged in');
+
+      const res = await fetch('/api/admin/role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ targetEmail: email, newRole })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Failed to update role');
+    } catch (error: any) {
       alert('Error updating role: ' + error.message);
-    } else {
-      await loadData();
+      // Revert on error
+      setUsers(users.map(u => u.email === email ? { ...u, role: currentRole } : u));
     }
   };
 
