@@ -1803,7 +1803,13 @@ useEffect(() => {
             </div>
 
             <button
-              onClick={() => setShowOPayModal(true)}
+              onClick={() => {
+                // Force close the mobile keyboard so the modal renders correctly
+                if (document.activeElement instanceof HTMLElement) {
+                  document.activeElement.blur();
+                }
+                setTimeout(() => setShowOPayModal(true), 50);
+              }}
               style={{
                 width: '100%',
                 padding: '14px',
