@@ -25,7 +25,7 @@ export default function OPayCheckoutModal({ finalPrice, wordCount, tierName, onC
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 9999,
+      zIndex: 30000,
       backdropFilter: 'blur(8px)',
       padding: '20px'
     }}>
