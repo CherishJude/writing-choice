@@ -48,13 +48,33 @@ export default function AdminPage() {
   }, []);
 
   const loadData = async () => {
-    const { data: userData } = await supabase.from('members').select('*');
-    const { data: msgData } = await supabase.from('group_messages').select('*').order('timestamp', { ascending: false });
-    const { data: orderData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-    
-    if (userData) setUsers(userData);
-    if (msgData) setMessages(msgData);
-    if (orderData) setOrders(orderData);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const res = await fetch('/api/admin/data', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        if (data.users) setUsers(data.users);
+        if (data.messages) setMessages(data.messages);
+        if (data.orders) setOrders(data.orders);
+      } else {
+        console.error('Admin API failed (Missing SUPABASE_SERVICE_ROLE_KEY?):', data.error);
+        // Fallback to normal fetch in case they haven't set the key yet
+        const { data: userData } = await supabase.from('members').select('*');
+        const { data: msgData } = await supabase.from('group_messages').select('*').order('timestamp', { ascending: false });
+        const { data: orderData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        
+        if (userData) setUsers(userData);
+        if (msgData) setMessages(msgData);
+        if (orderData) setOrders(orderData);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
@@ -10,15 +11,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 });
     }
 
+    // Fallback to normal supabase if admin client isn't configured
+    const client = supabaseAdmin || supabase;
+
     // 1. Fetch emails from members table
-    const { data: members } = await supabase.from('members').select('email');
+    const { data: members } = await client.from('members').select('email');
 
     // 2. Fetch emails from orders table
-    const { data: orders } = await supabase.from('orders').select('email');
+    const { data: orders } = await client.from('orders').select('user_email');
 
     // 3. Deduplicate recipients list
     const memberEmails = members ? members.map(m => m.email).filter(Boolean) : [];
-    const orderEmails = orders ? orders.map(o => o.email).filter(Boolean) : [];
+    const orderEmails = orders ? orders.map(o => o.user_email).filter(Boolean) : [];
     const defaultEmails = ['judecherish23@gmail.com'];
 
     const recipients = Array.from(new Set([...defaultEmails, ...memberEmails, ...orderEmails]));
