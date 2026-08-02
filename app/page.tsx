@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ChatWidget from '@/app/components/ChatWidget';
 import InlineEditor from '@/app/components/InlineEditor';
+import OPayCheckoutModal from '@/app/components/OPayCheckoutModal';
 
 export default function Home() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function Home() {
   const [showTerms, setShowTerms] = useState(false);
   const [showRefundPolicy, setShowRefundPolicy] = useState(false);
   const [showSectorsMenu, setShowSectorsMenu] = useState(false);
+  const [showOPayModal, setShowOPayModal] = useState(false);
   const [briefFileName, setBriefFileName] = useState('');
 
   // ----- Blogger Calculator & Tier State -----
@@ -1800,7 +1802,7 @@ useEffect(() => {
             </div>
 
             <button
-              onClick={sendWhatsAppOrder}
+              onClick={() => setShowOPayModal(true)}
               style={{
                 width: '100%',
                 padding: '14px',
@@ -2099,6 +2101,35 @@ useEffect(() => {
 
       {/* ===== CHAT WIDGET COMPONENT ===== */}
       <ChatWidget />
+      {/* OPay Checkout Modal */}
+      {showOPayModal && (
+        <OPayCheckoutModal 
+          finalPrice={finalPrice} 
+          wordCount={wordCount}
+          tierName={selectedTierName}
+          onClose={() => setShowOPayModal(false)}
+          onConfirm={async () => {
+            // Save order to database
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from('orders').insert({
+                user_email: user.email,
+                service: selectedSector || 'General Research',
+                tier: selectedTierName,
+                word_count: wordCount,
+                price: finalPrice,
+                status: 'pending_verification'
+              });
+              setShowOPayModal(false);
+              router.push('/dashboard/orders');
+            } else {
+              alert('Please log in to place an order.');
+              setShowOPayModal(false);
+            }
+          }}
+        />
+      )}
+
     </div>
   );
 }
