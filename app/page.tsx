@@ -33,7 +33,7 @@ export default function Home() {
   const [selectedTierName, setSelectedTierName] = useState('100% Plag-Free');
   const [selectedTierDiscount, setSelectedTierDiscount] = useState(0.15);
   const [selectedTierCorrections, setSelectedTierCorrections] = useState('4 Corrections');
-  const [wordCount, setWordCount] = useState(1000);
+  const [wordCount, setWordCount] = useState<number | string>(1000);
   const [finalPrice, setFinalPrice] = useState(7000);
 
   // ----- Selected Sector State -----
@@ -332,8 +332,8 @@ useEffect(() => {
 
   // Price Calculation Logic (Blogger Formula)
   useEffect(() => {
-    let basePrice = selectedTierRate * wordCount;
-    if (wordCount >= 10000) {
+    let basePrice = selectedTierRate * (Number(wordCount) || 0);
+    if ((Number(wordCount) || 0) >= 10000) {
       basePrice = basePrice * (1 - selectedTierDiscount);
     }
     setFinalPrice(Math.round(basePrice));
@@ -1763,7 +1763,7 @@ useEffect(() => {
                 max="50000"
                 step="100"
                 value={wordCount}
-                onChange={(e) => setWordCount(Math.max(1, Number(e.target.value)))}
+                onChange={(e) => setWordCount(e.target.value === '' ? '' : Number(e.target.value))}
                 style={{
                   width: '100%',
                   padding: '14px',
@@ -1777,7 +1777,7 @@ useEffect(() => {
                 }}
                 placeholder="Enter Word Count"
               />
-              {wordCount >= 10000 && (
+              {(Number(wordCount) || 0) >= 10000 && (
                 <div style={{ color: '#ffbf00', fontSize: '0.8rem', fontWeight: 'bold', marginTop: '6px' }}>
                   🎉 Bulk discount applied! ({selectedTierDiscount * 100}% off for 10,000+ words)
                 </div>
@@ -2105,8 +2105,8 @@ useEffect(() => {
       {/* OPay Checkout Modal */}
       {showOPayModal && (
         <OPayCheckoutModal 
-          finalPrice={finalPrice} 
-          wordCount={wordCount}
+          finalPrice={Math.round(finalPrice * 0.6)} 
+          wordCount={Number(wordCount) || 0}
           tierName={selectedTierName}
           onClose={() => setShowOPayModal(false)}
           onConfirm={async () => {
@@ -2120,8 +2120,8 @@ useEffect(() => {
                 user_email: user.email,
                 service: selectedSector || 'General Research',
                 tier: selectedTierName,
-                word_count: wordCount,
-                price: finalPrice,
+                word_count: Number(wordCount) || 0,
+                price: Math.round(finalPrice * 0.6),
                 status: 'pending_verification'
               });
               setShowOPayModal(false);
