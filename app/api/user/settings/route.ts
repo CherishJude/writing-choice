@@ -65,7 +65,13 @@ export async function PUT(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { settings } = await req.json();
-  const { error } = await supabase.from('members').update({ settings }).eq('email', user.email);
+
+  const updateData: any = { settings };
+  if (settings.display_name !== undefined) {
+    updateData.display_name = settings.display_name;
+  }
+
+  const { error } = await supabase.from('members').update(updateData).eq('email', user.email);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

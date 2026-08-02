@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import InstallBanner from './components/InstallBanner';
+import GlobalSettingsProvider from './components/GlobalSettingsProvider';
 
 
 
@@ -67,11 +68,10 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-full flex flex-col">
-
-        <InstallBanner />
-
-        {children}
-
+        <GlobalSettingsProvider>
+          <InstallBanner />
+          {children}
+        </GlobalSettingsProvider>
       </body>
 
     </html>

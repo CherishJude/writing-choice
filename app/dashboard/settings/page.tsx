@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 export default function SettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [textSize, setTextSize] = useState('medium');
+  const [fontFamily, setFontFamily] = useState('geist-sans');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -26,6 +27,7 @@ export default function SettingsPage() {
       if (!error && member?.settings) {
         setDisplayName(member.settings.display_name || '');
         setTextSize(member.settings.text_size || 'medium');
+        setFontFamily(member.settings.font_family || 'geist-sans');
       }
     };
     loadSettings();
@@ -35,19 +37,31 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage('');
     try {
-      // Update both settings JSON and the direct display_name column
-      const { error } = await supabase
-        .from('members')
-        .update({ 
-          settings: { display_name: displayName, text_size: textSize },
-          display_name: displayName  // This column is used by the header/sidebar directly
+      const res = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          settings: { 
+            display_name: displayName, 
+            text_size: textSize,
+            font_family: fontFamily
+          }
         })
-        .eq('email', userEmail);
+      });
 
-      if (error) {
-        setMessage('❌ ' + error.message);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage('❌ ' + (data.error || 'Failed to save settings'));
       } else {
         setMessage('✅ Settings saved!');
+        // Update local storage so the provider can apply immediately
+        localStorage.setItem('user_settings_cache', JSON.stringify({
+          text_size: textSize,
+          font_family: fontFamily
+        }));
         // Notify the main page to refresh the display name everywhere
         window.dispatchEvent(new CustomEvent('userSettingsUpdated'));
       }
@@ -147,6 +161,38 @@ export default function SettingsPage() {
             <option value="small">Small</option>
             <option value="medium">Medium</option>
             <option value="large">Large</option>
+          </select>
+        </div>
+
+        <div style={{
+          background: 'var(--surface-card, rgba(255,255,255,0.04))',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          marginBottom: '16px',
+          border: '1px solid var(--surface-border, rgba(255,255,255,0.08))',
+        }}>
+          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '8px' }}>
+            Font Family
+          </label>
+          <select
+            value={fontFamily}
+            onChange={(e) => setFontFamily(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              background: 'var(--bg-primary, #0a0d14)',
+              border: '1px solid var(--surface-border, rgba(255,255,255,0.1))',
+              borderRadius: '12px',
+              color: 'var(--text-primary, #fff)',
+              fontSize: '0.95rem',
+              outline: 'none',
+            }}
+          >
+            <option value="geist-sans">System Default (Geist Sans)</option>
+            <option value="geist-mono">Monospace (Geist Mono)</option>
+            <option value="inter">Inter (Modern Sans)</option>
+            <option value="serif">Elegant Serif</option>
+            <option value="comic-sans">Playful (Comic Sans)</option>
           </select>
         </div>
 
