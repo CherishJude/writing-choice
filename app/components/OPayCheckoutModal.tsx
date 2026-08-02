@@ -89,7 +89,7 @@ export default function OPayCheckoutModal({ totalPrice, depositAmount, wordCount
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#94a3b8' }}>Account Number:</span>
-              <span style={{ fontWeight: '800', fontSize: '1.1rem', color: '#fff' }}>[PENDING]</span>
+              <span style={{ fontWeight: '800', fontSize: '1.1rem', color: '#fff' }}>9015679998</span>
             </div>
           </div>
         </div>
