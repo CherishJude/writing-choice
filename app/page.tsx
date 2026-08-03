@@ -2184,14 +2184,14 @@ useEffect(() => {
                 // Note: using 'orders' bucket instead of 'briefs' as it might already exist!
                 // Actually user might not have created 'briefs'. Let's upload to 'orders' just in case.
                 const { error: uploadError } = await supabase.storage
-                  .from('orders')
+                  .from('briefs')
                   .upload(filePath, file);
                   
                 if (uploadError) {
                   console.error('Error uploading file:', uploadError);
                   // We continue even if upload fails
                 } else {
-                  const { data } = supabase.storage.from('orders').getPublicUrl(filePath);
+                  const { data } = supabase.storage.from('briefs').getPublicUrl(filePath);
                   if (data?.publicUrl) {
                     uploadedUrls.push(data.publicUrl);
                   }

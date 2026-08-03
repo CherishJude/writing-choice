@@ -25,6 +25,21 @@ export default function AdminPage() {
   const [accentColor, setAccentColor] = useState('#00f2fe');
 
   const [dynamicTrends, setDynamicTrends] = useState<any[]>([]);
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+
+  const updateOrderStatus = async (orderId: number, newStatus: string) => {
+    setUpdatingOrderId(orderId);
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: newStatus })
+      .eq('id', orderId);
+    if (!error) {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    } else {
+      alert('Failed to update status: ' + error.message);
+    }
+    setUpdatingOrderId(null);
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('writingchoice_theme');
@@ -663,6 +678,7 @@ export default function AdminPage() {
                     <th style={{ padding: '12px' }}>Service / Tier</th>
                     <th style={{ padding: '12px' }}>Words / Price</th>
                     <th style={{ padding: '12px' }}>Date</th>
+                    <th style={{ padding: '12px' }}>Status</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Attachments</th>
                   </tr>
                 </thead>
@@ -679,35 +695,69 @@ export default function AdminPage() {
                         <div style={{ color: '#ffbf00', fontWeight: 'bold' }}>₦{o.price?.toLocaleString() || 0} (60%)</div>
                       </td>
                       <td style={{ padding: '12px', color: isDark ? '#94a3b8' : '#64748b' }}>
-                        {new Date(o.created_at).toLocaleDateString()}
+                        {new Date(o.timestamp || o.created_at).toLocaleDateString()}
+                      </td>
+                      {/* Status management dropdown */}
+                      <td style={{ padding: '12px' }}>
+                        <select
+                          value={o.status || 'pending_verification'}
+                          onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                          disabled={updatingOrderId === o.id}
+                          style={{
+                            background: isDark ? 'rgba(255,255,255,0.07)' : '#f8fafc',
+                            color:
+                              o.status === 'Completed' ? '#25d366' :
+                              o.status === 'In Progress' ? '#00f2fe' :
+                              o.status === 'Revision' ? '#ff9900' :
+                              o.status === 'Cancelled' ? '#ef4444' : '#ffbf00',
+                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`,
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            fontWeight: '700',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            opacity: updatingOrderId === o.id ? 0.5 : 1,
+                          }}
+                        >
+                          <option value="pending_verification">⏳ Pending Verification</option>
+                          <option value="Verified">✅ Verified</option>
+                          <option value="In Progress">🔄 In Progress</option>
+                          <option value="Revision">🔁 Revision</option>
+                          <option value="Completed">✔️ Completed</option>
+                          <option value="Cancelled">❌ Cancelled</option>
+                        </select>
                       </td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         {o.brief_file_url ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
                             {o.brief_file_url.split(',').map((url: string, idx: number) => (
-                              <a 
-                                key={idx} 
-                                href={url.trim()} 
-                                target="_blank" 
+                              <a
+                                key={idx}
+                                href={url.trim()}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
                                   display: 'inline-block',
-                                  padding: '4px 10px',
-                                  background: 'rgba(0,242,254,0.1)',
+                                  padding: '5px 12px',
+                                  background: 'rgba(0,242,254,0.12)',
                                   color: '#00f2fe',
-                                  borderRadius: '6px',
+                                  borderRadius: '8px',
                                   textDecoration: 'none',
-                                  fontSize: '0.75rem',
+                                  fontSize: '0.78rem',
                                   fontWeight: '700',
+                                  border: '1px solid rgba(0,242,254,0.25)',
                                   whiteSpace: 'nowrap'
                                 }}
                               >
-                                📄 Download File {o.brief_file_url.split(',').length > 1 ? idx + 1 : ''}
+                                📥 Download {o.brief_file_url.split(',').length > 1 ? `File ${idx + 1}` : 'Brief'}
                               </a>
                             ))}
                           </div>
+                        ) : o.brief_file ? (
+                          <span style={{ fontSize: '0.78rem', color: isDark ? '#94a3b8' : '#64748b' }}>📎 {o.brief_file}</span>
                         ) : (
-                          <span style={{ color: isDark ? '#64748b' : '#94a3b8', fontSize: '0.8rem' }}>No Attachments</span>
+                          <span style={{ color: isDark ? '#64748b' : '#94a3b8', fontSize: '0.78rem' }}>No Attachment</span>
                         )}
                       </td>
                     </tr>

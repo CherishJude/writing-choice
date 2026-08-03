@@ -37,21 +37,21 @@ export default function OrdersPage() {
 
     setUploadingOrderId(orderId);
     
-    // Upload to Supabase Storage 'orders' bucket
+    // Upload to Supabase Storage 'briefs' bucket
     const fileName = `${Date.now()}_${file.name}`;
     const { error: uploadError } = await supabase.storage
-      .from('orders')
+      .from('briefs')
       .upload(fileName, file);
 
     if (uploadError) {
-      alert('Upload failed. Please ensure the "orders" storage bucket exists in Supabase.');
+      alert('Upload failed. Please ensure the "briefs" storage bucket exists in Supabase.');
       setUploadingOrderId(null);
       return;
     }
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
-      .from('orders')
+      .from('briefs')
       .getPublicUrl(fileName);
 
     // Update order with file URL
@@ -66,8 +66,8 @@ export default function OrdersPage() {
       const { data } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_email', user.email)
-        .order('created_at', { ascending: false });
+        .eq('email', user.email)
+        .order('timestamp', { ascending: false });
       if (data) setOrders(data);
     }
     
@@ -142,14 +142,32 @@ export default function OrdersPage() {
                     <span style={{
                       display: 'inline-block',
                       padding: '4px 12px',
-                      background: order.status === 'pending_verification' ? 'rgba(255, 191, 0, 0.2)' : 'rgba(0, 242, 254, 0.2)',
-                      color: order.status === 'pending_verification' ? '#ffbf00' : '#00f2fe',
+                      background:
+                        order.status === 'Completed' ? 'rgba(37,211,102,0.2)' :
+                        order.status === 'Cancelled' ? 'rgba(239,68,68,0.2)' :
+                        order.status === 'In Progress' ? 'rgba(0,242,254,0.2)' :
+                        order.status === 'Revision' ? 'rgba(255,153,0,0.2)' :
+                        order.status === 'Verified' ? 'rgba(100,200,100,0.2)' :
+                        'rgba(255, 191, 0, 0.2)',
+                      color:
+                        order.status === 'Completed' ? '#25d366' :
+                        order.status === 'Cancelled' ? '#ef4444' :
+                        order.status === 'In Progress' ? '#00f2fe' :
+                        order.status === 'Revision' ? '#ff9900' :
+                        order.status === 'Verified' ? '#00cc88' :
+                        '#ffbf00',
                       borderRadius: '12px',
                       fontSize: '0.8rem',
                       fontWeight: '800',
                       marginTop: '4px'
                     }}>
-                      {order.status === 'pending_verification' ? 'Pending Payment' : order.status.replace('_', ' ').toUpperCase()}
+                      {order.status === 'pending_verification' ? '⏳ Pending Verification' :
+                       order.status === 'Verified' ? '✅ Verified' :
+                       order.status === 'In Progress' ? '🔄 In Progress' :
+                       order.status === 'Revision' ? '🔁 Revision Requested' :
+                       order.status === 'Completed' ? '✔️ Completed' :
+                       order.status === 'Cancelled' ? '❌ Cancelled' :
+                       order.status}
                     </span>
                   </div>
                 </div>
