@@ -365,21 +365,21 @@ useEffect(() => {
   const sendWhatsAppOrder = (uploadedUrls: string[] = [], whatsappWindow: Window | null = null) => {
     // Generate attachments text
     const attachmentsText = uploadedUrls.length > 0 
-      ? `%0A%0A*Attachments:*%0A${uploadedUrls.map((url, i) => `${i + 1}. ${url}`).join('%0A')}`
+      ? `\n\n*Attachments:*\n${uploadedUrls.map((url, i) => `${i + 1}. ${url}`).join('\n')}`
       : '';
 
-    const message = `*NEW ORDER - WritingChoice*%0A%0A` +
-      `*Payment Status:* Transferred via OPay%0A` +
-      `*Customer:* ${displayName || 'Guest'}%0A` +
-      `*Service:* ${selectedSector || 'General Research'}%0A` +
-      `*Brief File:* ${briefFiles.length > 0 ? briefFiles.map(f => f.name).join(', ') : 'Attached / Provided via Chat'}%0A` +
-      `*Tier:* ₦${selectedTierRate}pw (${selectedTierName})%0A` +
-      `*Corrections:* ${selectedTierCorrections}%0A` +
-      `*Word Count:* ${wordCount} words%0A` +
-      `*Total Price:* ₦${finalPrice.toLocaleString()}%0A` +
+    const message = `*NEW ORDER - WritingChoice*\n\n` +
+      `*Payment Status:* Transferred via OPay\n` +
+      `*Customer:* ${displayName || 'Guest'}\n` +
+      `*Service:* ${selectedSector || 'General Research'}\n` +
+      `*Brief File:* ${briefFiles.length > 0 ? briefFiles.map(f => f.name).join(', ') : 'Attached / Provided via Chat'}\n` +
+      `*Tier:* ₦${selectedTierRate}pw (${selectedTierName})\n` +
+      `*Corrections:* ${selectedTierCorrections}\n` +
+      `*Word Count:* ${wordCount} words\n` +
+      `*Total Price:* ₦${finalPrice.toLocaleString()}\n` +
       `*Amount Paid (60% Deposit):* ₦${Math.round(finalPrice * 0.6).toLocaleString()}` + attachmentsText;
     
-    const whatsappUrl = `https://wa.me/2349015679998?text=${message}`;
+    const whatsappUrl = `https://wa.me/2349015679998?text=${encodeURIComponent(message)}`;
     
     if (whatsappWindow) {
       whatsappWindow.location.href = whatsappUrl;
@@ -2234,14 +2234,12 @@ useEffect(() => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
               const { error: insertError } = await supabase.from('orders').insert({
-                user_id: user.id,
                 user_email: user.email,
                 service: selectedSector || 'General Research',
                 tier: selectedTierName || 'Standard',
                 word_count: Number(wordCount) || 0,
                 price: Math.round(finalPrice * 0.6),
-                status: 'pending_verification',
-                brief_file_url: uploadedUrls.join(',') // NO SQL COLUMN NEEDED!
+                status: 'pending_verification'
               });
 
               if (insertError) {
