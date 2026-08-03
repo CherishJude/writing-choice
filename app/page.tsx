@@ -29,10 +29,10 @@ export default function Home() {
   const [briefFiles, setBriefFiles] = useState<File[]>([]);
 
   // ----- Blogger Calculator & Tier State -----
-  const [selectedTierRate, setSelectedTierRate] = useState(70);
-  const [selectedTierName, setSelectedTierName] = useState('100% Plag-Free');
-  const [selectedTierDiscount, setSelectedTierDiscount] = useState(0.15);
-  const [selectedTierCorrections, setSelectedTierCorrections] = useState('4 Corrections');
+  const [selectedTierRate, setSelectedTierRate] = useState<number>(0);
+  const [selectedTierName, setSelectedTierName] = useState('');
+  const [selectedTierDiscount, setSelectedTierDiscount] = useState(0);
+  const [selectedTierCorrections, setSelectedTierCorrections] = useState('');
   const [wordCount, setWordCount] = useState<number | string>(1000);
   const [finalPrice, setFinalPrice] = useState(7000);
 
@@ -376,7 +376,8 @@ useEffect(() => {
       `*Tier:* ₦${selectedTierRate}pw (${selectedTierName})%0A` +
       `*Corrections:* ${selectedTierCorrections}%0A` +
       `*Word Count:* ${wordCount} words%0A` +
-      `*Total Price:* ₦${finalPrice.toLocaleString()}` + attachmentsText;
+      `*Total Price:* ₦${finalPrice.toLocaleString()}%0A` +
+      `*Amount Paid (60% Deposit):* ₦${Math.round(finalPrice * 0.6).toLocaleString()}` + attachmentsText;
     
     const whatsappUrl = `https://wa.me/2349015679998?text=${message}`;
     
@@ -2233,9 +2234,10 @@ useEffect(() => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
               const { error: insertError } = await supabase.from('orders').insert({
+                user_id: user.id,
                 user_email: user.email,
                 service: selectedSector || 'General Research',
-                tier: selectedTierName,
+                tier: selectedTierName || 'Standard',
                 word_count: Number(wordCount) || 0,
                 price: Math.round(finalPrice * 0.6),
                 status: 'pending_verification',
