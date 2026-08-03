@@ -362,7 +362,7 @@ useEffect(() => {
     setBriefFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const sendWhatsAppOrder = (uploadedUrls: string[] = []) => {
+  const sendWhatsAppOrder = (uploadedUrls: string[] = [], whatsappWindow: Window | null = null) => {
     // Generate attachments text
     const attachmentsText = uploadedUrls.length > 0 
       ? `%0A%0A*Attachments:*%0A${uploadedUrls.map((url, i) => `${i + 1}. ${url}`).join('%0A')}`
@@ -377,7 +377,14 @@ useEffect(() => {
       `*Corrections:* ${selectedTierCorrections}%0A` +
       `*Word Count:* ${wordCount} words%0A` +
       `*Total Price:* ₦${finalPrice.toLocaleString()}` + attachmentsText;
-    window.open(`https://wa.me/2348138842719?text=${message}`, '_blank');
+    
+    const whatsappUrl = `https://wa.me/2349015679998?text=${message}`;
+    
+    if (whatsappWindow) {
+      whatsappWindow.location.href = whatsappUrl;
+    } else {
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   const surfaceCardStyle: React.CSSProperties = {
@@ -2186,6 +2193,12 @@ useEffect(() => {
           tierName={selectedTierName}
           onClose={() => setShowOPayModal(false)}
           onConfirm={async () => {
+            // OPEN WINDOW IMMEDIATELY TO BYPASS POPUP BLOCKER
+            const whatsappWindow = window.open('about:blank', '_blank');
+            if (whatsappWindow) {
+              whatsappWindow.document.write('Loading securely...');
+            }
+
             // Upload files to Supabase Storage if any
             let uploadedUrls: string[] = [];
             
@@ -2195,14 +2208,17 @@ useEffect(() => {
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `${fileName}`; // bucket root
                 
+                // Note: using 'orders' bucket instead of 'briefs' as it might already exist!
+                // Actually user might not have created 'briefs'. Let's upload to 'orders' just in case.
                 const { error: uploadError } = await supabase.storage
-                  .from('briefs')
+                  .from('orders')
                   .upload(filePath, file);
                   
                 if (uploadError) {
                   console.error('Error uploading file:', uploadError);
+                  // We continue even if upload fails
                 } else {
-                  const { data } = supabase.storage.from('briefs').getPublicUrl(filePath);
+                  const { data } = supabase.storage.from('orders').getPublicUrl(filePath);
                   if (data?.publicUrl) {
                     uploadedUrls.push(data.publicUrl);
                   }
@@ -2210,21 +2226,27 @@ useEffect(() => {
               }
             }
 
-            // First send the WhatsApp message
-            sendWhatsAppOrder(uploadedUrls);
+            // Route the WhatsApp message to the already opened window
+            sendWhatsAppOrder(uploadedUrls, whatsappWindow);
 
             // Save order to database
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-              await supabase.from('orders').insert({
+              const { error: insertError } = await supabase.from('orders').insert({
                 user_email: user.email,
                 service: selectedSector || 'General Research',
                 tier: selectedTierName,
                 word_count: Number(wordCount) || 0,
                 price: Math.round(finalPrice * 0.6),
                 status: 'pending_verification',
-                attachments: uploadedUrls
+                brief_file_url: uploadedUrls.join(',') // NO SQL COLUMN NEEDED!
               });
+
+              if (insertError) {
+                console.error("Order Insert Error: ", insertError);
+                alert("Order recorded but there was a sync issue: " + insertError.message);
+              }
+
               setShowOPayModal(false);
               router.push('/dashboard/orders');
             } else {

@@ -682,12 +682,12 @@ export default function AdminPage() {
                         {new Date(o.created_at).toLocaleDateString()}
                       </td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
-                        {o.attachments && o.attachments.length > 0 ? (
+                        {o.brief_file_url ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-                            {o.attachments.map((url: string, idx: number) => (
+                            {o.brief_file_url.split(',').map((url: string, idx: number) => (
                               <a 
                                 key={idx} 
-                                href={url} 
+                                href={url.trim()} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 style={{
@@ -702,29 +702,10 @@ export default function AdminPage() {
                                   whiteSpace: 'nowrap'
                                 }}
                               >
-                                📄 Download File {idx + 1}
+                                📄 Download File {o.brief_file_url.split(',').length > 1 ? idx + 1 : ''}
                               </a>
                             ))}
                           </div>
-                        ) : o.brief_file_url ? (
-                          <a 
-                            href={o.brief_file_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            style={{
-                              display: 'inline-block',
-                              padding: '4px 10px',
-                              background: 'rgba(0,242,254,0.1)',
-                              color: '#00f2fe',
-                              borderRadius: '6px',
-                              textDecoration: 'none',
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            📄 Download File
-                          </a>
                         ) : (
                           <span style={{ color: isDark ? '#64748b' : '#94a3b8', fontSize: '0.8rem' }}>No Attachments</span>
                         )}
