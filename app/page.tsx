@@ -1014,35 +1014,7 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Card 2: Pricing Calculator */}
-          <div style={surfaceCardStyle} className="glass-card">
-            <div style={{ padding: '28px' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '14px' }}>💎</div>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '1.3rem', fontWeight: '800', color: isDark ? '#fff' : '#0f172a' }}>
-                Pricing Calculator
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: isDark ? '#94a3b8' : '#64748b', lineHeight: '1.6', marginBottom: '20px' }}>
-                Calculate transparent pricing based on word count, quality tier, and bulk discounts.
-              </p>
-              <button
-                onClick={() => setShowCalculator(true)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '30px',
-                  background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`,
-                  color: '#000',
-                  border: 'none',
-                  fontWeight: '800',
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  boxShadow: `0 4px 15px ${accentColor}33`,
-                }}
-              >
-                Open Calculator →
-              </button>
-            </div>
-          </div>
+
 
           {/* Card 3: Service Terms */}
           <div style={surfaceCardStyle} className="glass-card">
@@ -2234,12 +2206,14 @@ useEffect(() => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
               const { error: insertError } = await supabase.from('orders').insert({
+                user_id: user.id,
                 user_email: user.email,
                 service: selectedSector || 'General Research',
                 tier: selectedTierName || 'Standard',
                 word_count: Number(wordCount) || 0,
                 price: Math.round(finalPrice * 0.6),
-                status: 'pending_verification'
+                status: 'pending_verification',
+                brief_file_url: uploadedUrls.length > 0 ? uploadedUrls.join(',') : null
               });
 
               if (insertError) {
