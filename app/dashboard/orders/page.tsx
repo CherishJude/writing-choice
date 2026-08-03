@@ -21,7 +21,7 @@ export default function OrdersPage() {
       const { data } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_email', user.email)
+        .eq('email', user.email)
         .order('created_at', { ascending: false });
 
       if (data) setOrders(data);

@@ -669,7 +669,7 @@ export default function AdminPage() {
                 <tbody>
                   {orders.map((o: any) => (
                     <tr key={o.id} style={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}` }}>
-                      <td style={{ padding: '12px', fontWeight: '700' }}>{o.user_email}</td>
+                      <td style={{ padding: '12px', fontWeight: '700' }}>{o.email}</td>
                       <td style={{ padding: '12px' }}>
                         <div><strong>{o.service}</strong></div>
                         <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>{o.tier}</div>

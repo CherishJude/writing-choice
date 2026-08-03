@@ -44,14 +44,66 @@ export async function GET(req: Request) {
 
   // If user requested fresh dynamic auto-generation:
   if (action === 'generate') {
-    const customDynamicTrend = {
-      id: `trend_generated_${now.getTime()}`,
-      topic: `🚀 Dynamic Breaking News (${dateStr} - ${currentHour}:00)`,
-      subject: `🚀 Breaking Update (${dateStr}): Special Flash Offer on Academic Writing!`,
-      message: `Live platform update for ${dateStr}: Cherish Jude is currently online accepting instant orders. Attach your brief now on WritingChoice for fast delivery!`,
-      badge: '⚡ Auto Generated'
-    };
-    return NextResponse.json({ success: true, trend: customDynamicTrend, timestamp: now.toISOString() });
+    try {
+      const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+      if (!groqApiKey) {
+        throw new Error('Groq API Key not found');
+      }
+
+      const prompt = `Act as an expert Academic Marketing Strategist. 
+Generate a highly engaging, realistic, and dynamic trending topic based on current global events (e.g., tech news, academic deadlines, sports, global news) for today: ${dateStr}.
+The brand is "WritingChoice" run by "Cherish Jude", providing top-tier academic research, data analysis, and programming. 
+Format your response STRICTLY as a JSON object with NO markdown wrapping, containing exactly these keys:
+{
+  "topic": "Short engaging topic title with an emoji",
+  "subject": "Catchy email subject line with an emoji",
+  "message": "The body of the broadcast message connecting the real-world event to a discount/offer for WritingChoice services.",
+  "badge": "Short 1-3 word badge with emoji (e.g. ⚡ Live Event)"
+}`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          response_format: { type: 'json_object' }
+        })
+      });
+
+      const jsonRes = await res.json();
+      if (jsonRes.error) {
+        throw new Error(jsonRes.error.message || 'Groq API Error');
+      }
+
+      const content = jsonRes.choices[0].message.content;
+      const parsedContent = JSON.parse(content);
+
+      const aiGeneratedTrend = {
+        id: `trend_ai_${now.getTime()}`,
+        topic: parsedContent.topic,
+        subject: parsedContent.subject,
+        message: parsedContent.message,
+        badge: parsedContent.badge
+      };
+
+      return NextResponse.json({ success: true, trend: aiGeneratedTrend, timestamp: now.toISOString() });
+    } catch (err: any) {
+      console.error('Groq Generation Error:', err);
+      // Fallback if AI fails
+      const customDynamicTrend = {
+        id: `trend_generated_${now.getTime()}`,
+        topic: `🚀 Dynamic Breaking News (${dateStr} - ${currentHour}:00)`,
+        subject: `🚀 Breaking Update (${dateStr}): Special Flash Offer on Academic Writing!`,
+        message: `Live platform update for ${dateStr}: Cherish Jude is currently online accepting instant orders. Attach your brief now on WritingChoice for fast delivery!`,
+        badge: '⚡ Auto Generated'
+      };
+      return NextResponse.json({ success: true, trend: customDynamicTrend, timestamp: now.toISOString() });
+    }
   }
 
   return NextResponse.json({

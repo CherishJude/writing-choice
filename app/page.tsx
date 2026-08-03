@@ -2207,7 +2207,7 @@ useEffect(() => {
             if (user) {
               const { error: insertError } = await supabase.from('orders').insert({
                 user_id: user.id,
-                user_email: user.email,
+                email: user.email,
                 service: selectedSector || 'General Research',
                 tier: selectedTierName || 'Standard',
                 word_count: Number(wordCount) || 0,
