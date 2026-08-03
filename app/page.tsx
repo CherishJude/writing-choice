@@ -26,7 +26,7 @@ export default function Home() {
   const [showRefundPolicy, setShowRefundPolicy] = useState(false);
   const [showSectorsMenu, setShowSectorsMenu] = useState(false);
   const [showOPayModal, setShowOPayModal] = useState(false);
-  const [briefFileName, setBriefFileName] = useState('');
+  const [briefFiles, setBriefFiles] = useState<File[]>([]);
 
   // ----- Blogger Calculator & Tier State -----
   const [selectedTierRate, setSelectedTierRate] = useState(70);
@@ -352,22 +352,31 @@ useEffect(() => {
   };
 
   const handleBriefUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setBriefFileName(file.name);
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setBriefFiles(prev => [...prev, ...newFiles]);
     }
   };
 
-  const sendWhatsAppOrder = () => {
+  const removeBriefFile = (indexToRemove: number) => {
+    setBriefFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const sendWhatsAppOrder = (uploadedUrls: string[] = []) => {
+    // Generate attachments text
+    const attachmentsText = uploadedUrls.length > 0 
+      ? `%0A%0A*Attachments:*%0A${uploadedUrls.map((url, i) => `${i + 1}. ${url}`).join('%0A')}`
+      : '';
+
     const message = `*NEW ORDER - WritingChoice*%0A%0A` +
       `*Payment Status:* Transferred via OPay%0A` +
       `*Customer:* ${displayName || 'Guest'}%0A` +
       `*Service:* ${selectedSector || 'General Research'}%0A` +
-      `*Brief File:* ${briefFileName || 'Attached / Provided via Chat'}%0A` +
+      `*Brief File:* ${briefFiles.length > 0 ? briefFiles.map(f => f.name).join(', ') : 'Attached / Provided via Chat'}%0A` +
       `*Tier:* ₦${selectedTierRate}pw (${selectedTierName})%0A` +
       `*Corrections:* ${selectedTierCorrections}%0A` +
       `*Word Count:* ${wordCount} words%0A` +
-      `*Total Price:* ₦${finalPrice.toLocaleString()}`;
+      `*Total Price:* ₦${finalPrice.toLocaleString()}` + attachmentsText;
     window.open(`https://wa.me/2348138842719?text=${message}`, '_blank');
   };
 
@@ -879,7 +888,7 @@ useEffect(() => {
               )}
 
               {/* MODERN GLASSMORPHIC DRAG & DROP BRIEF UPLOAD CARD */}
-              <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+              <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}` }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: accentColor, marginBottom: '10px' }}>
                   📎 Attach Brief File
                 </label>
@@ -887,48 +896,108 @@ useEffect(() => {
                 <div style={{
                   position: 'relative',
                   background: isDark ? 'rgba(0, 242, 254, 0.03)' : 'rgba(0, 242, 254, 0.06)',
-                  border: `2px dashed ${briefFileName ? '#25d366' : accentColor}`,
+                  border: `2px dashed ${briefFiles.length > 0 ? '#25d366' : accentColor}`,
                   borderRadius: '16px',
                   padding: '20px 16px',
                   textAlign: 'center',
-                  cursor: 'pointer',
                   transition: 'all 0.25s ease',
                 }}>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx,.txt,.zip"
-                    onChange={handleBriefUpload}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      opacity: 0,
-                      cursor: 'pointer',
-                      zIndex: 2,
-                    }}
-                  />
-                  <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>
-                    {briefFileName ? '📄' : '☁️'}
+                  <div style={{ position: 'relative', display: 'inline-block', width: '100%', cursor: 'pointer' }}>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,.zip,image/*"
+                      multiple
+                      onChange={handleBriefUpload}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer',
+                        zIndex: 2,
+                      }}
+                    />
+                    <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>
+                      {briefFiles.length > 0 ? '📄' : '☁️'}
+                    </div>
+
+                    {briefFiles.length === 0 && (
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '0.9rem', color: isDark ? '#fff' : '#0f172a' }}>
+                          Upload Brief Files
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b', marginTop: '4px' }}>
+                          Drop files here or <span style={{ color: accentColor, textDecoration: 'underline' }}>Browse</span>
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: isDark ? '#64748b' : '#94a3b8', marginTop: '6px' }}>
+                          PDF, DOC, ZIP, Images allowed
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {briefFileName ? (
-                    <div>
-                      <div style={{ color: '#25d366', fontWeight: '800', fontSize: '0.88rem' }}>
-                        ✓ {briefFileName}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: isDark ? '#94a3b8' : '#64748b', marginTop: '4px' }}>
-                        File attached cleanly • Tap or drop to change file
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div style={{ fontWeight: '800', fontSize: '0.88rem', color: isDark ? '#fff' : '#0f172a' }}>
-                        Drop Brief File Here or <span style={{ color: accentColor, textDecoration: 'underline' }}>Browse</span>
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: isDark ? '#94a3b8' : '#64748b', marginTop: '6px' }}>
-                        Supports PDF, DOCX, TXT, or ZIP (Up to 50MB)
+                  {briefFiles.length > 0 && (
+                    <div style={{ marginTop: '16px', textAlign: 'left', zIndex: 3, position: 'relative' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 'bold' }}>Attached Files:</div>
+                      {briefFiles.map((f, i) => (
+                        <div key={i} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          background: isDark ? 'rgba(0,0,0,0.3)' : '#ffffff', 
+                          padding: '8px 12px', 
+                          borderRadius: '8px', 
+                          marginBottom: '6px',
+                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`
+                        }}>
+                          <span style={{ fontSize: '0.85rem', color: '#25d366', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            ✓ {f.name}
+                          </span>
+                          <button 
+                            onClick={(e) => { e.preventDefault(); removeBriefFile(i); }} 
+                            style={{ 
+                              background: 'transparent', 
+                              border: 'none', 
+                              color: '#ef4444', 
+                              cursor: 'pointer', 
+                              fontWeight: 'bold', 
+                              padding: '2px 8px' 
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      
+                      <div style={{ position: 'relative', marginTop: '12px', display: 'inline-block' }}>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.txt,.zip,image/*"
+                          multiple
+                          onChange={handleBriefUpload}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            opacity: 0,
+                            cursor: 'pointer',
+                          }}
+                        />
+                        <button style={{ 
+                          background: 'transparent', 
+                          border: `1px dashed ${accentColor}`, 
+                          color: accentColor, 
+                          padding: '6px 12px', 
+                          borderRadius: '8px', 
+                          fontSize: '0.8rem', 
+                          cursor: 'pointer' 
+                        }}>
+                          + Add More Files
+                        </button>
                       </div>
                     </div>
                   )}
@@ -2117,8 +2186,32 @@ useEffect(() => {
           tierName={selectedTierName}
           onClose={() => setShowOPayModal(false)}
           onConfirm={async () => {
+            // Upload files to Supabase Storage if any
+            let uploadedUrls: string[] = [];
+            
+            if (briefFiles.length > 0) {
+              for (const file of briefFiles) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `${fileName}`; // bucket root
+                
+                const { error: uploadError } = await supabase.storage
+                  .from('briefs')
+                  .upload(filePath, file);
+                  
+                if (uploadError) {
+                  console.error('Error uploading file:', uploadError);
+                } else {
+                  const { data } = supabase.storage.from('briefs').getPublicUrl(filePath);
+                  if (data?.publicUrl) {
+                    uploadedUrls.push(data.publicUrl);
+                  }
+                }
+              }
+            }
+
             // First send the WhatsApp message
-            sendWhatsAppOrder();
+            sendWhatsAppOrder(uploadedUrls);
 
             // Save order to database
             const { data: { user } } = await supabase.auth.getUser();
@@ -2129,7 +2222,8 @@ useEffect(() => {
                 tier: selectedTierName,
                 word_count: Number(wordCount) || 0,
                 price: Math.round(finalPrice * 0.6),
-                status: 'pending_verification'
+                status: 'pending_verification',
+                attachments: uploadedUrls
               });
               setShowOPayModal(false);
               router.push('/dashboard/orders');

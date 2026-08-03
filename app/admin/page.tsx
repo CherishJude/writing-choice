@@ -646,6 +646,104 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* SECTION 4: MASTER ORDERS & ATTACHMENTS (SUPER ADMIN) */}
+        {userRole === 'super_admin' && (
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0, color: isDark ? '#fff' : '#0f172a' }}>
+                📁 Master Orders & Attachments
+              </h2>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: accentColor }}>
+                    <th style={{ padding: '12px' }}>Client Email</th>
+                    <th style={{ padding: '12px' }}>Service / Tier</th>
+                    <th style={{ padding: '12px' }}>Words / Price</th>
+                    <th style={{ padding: '12px' }}>Date</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>Attachments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((o: any) => (
+                    <tr key={o.id} style={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}` }}>
+                      <td style={{ padding: '12px', fontWeight: '700' }}>{o.user_email}</td>
+                      <td style={{ padding: '12px' }}>
+                        <div><strong>{o.service}</strong></div>
+                        <div style={{ fontSize: '0.75rem', color: isDark ? '#94a3b8' : '#64748b' }}>{o.tier}</div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div>{o.word_count} words</div>
+                        <div style={{ color: '#ffbf00', fontWeight: 'bold' }}>₦{o.price?.toLocaleString() || 0} (60%)</div>
+                      </td>
+                      <td style={{ padding: '12px', color: isDark ? '#94a3b8' : '#64748b' }}>
+                        {new Date(o.created_at).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        {o.attachments && o.attachments.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                            {o.attachments.map((url: string, idx: number) => (
+                              <a 
+                                key={idx} 
+                                href={url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '4px 10px',
+                                  background: 'rgba(0,242,254,0.1)',
+                                  color: '#00f2fe',
+                                  borderRadius: '6px',
+                                  textDecoration: 'none',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '700',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                📄 Download File {idx + 1}
+                              </a>
+                            ))}
+                          </div>
+                        ) : o.brief_file_url ? (
+                          <a 
+                            href={o.brief_file_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 10px',
+                              background: 'rgba(0,242,254,0.1)',
+                              color: '#00f2fe',
+                              borderRadius: '6px',
+                              textDecoration: 'none',
+                              fontSize: '0.75rem',
+                              fontWeight: '700',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            📄 Download File
+                          </a>
+                        ) : (
+                          <span style={{ color: isDark ? '#64748b' : '#94a3b8', fontSize: '0.8rem' }}>No Attachments</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {orders.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: isDark ? '#64748b' : '#94a3b8' }}>
+                        No orders have been placed yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

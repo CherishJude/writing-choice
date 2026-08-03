@@ -158,12 +158,23 @@ export default function OrdersPage() {
 
                 <div>
                   <h4 style={{ margin: '0 0 8px', fontSize: '0.95rem' }}>Instruction Documents / Rubrics</h4>
-                  {order.brief_file_url ? (
-                    <a href={order.brief_file_url} target="_blank" rel="noopener noreferrer" style={{
-                      display: 'inline-block', padding: '8px 16px', background: 'rgba(0,242,254,0.1)', color: '#00f2fe', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600'
-                    }}>
-                      📄 View Uploaded Document
-                    </a>
+                  {(order.attachments && order.attachments.length > 0) || order.brief_file_url ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {order.attachments && order.attachments.map((url: string, idx: number) => (
+                        <a key={idx} href={url} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-block', padding: '8px 16px', background: 'rgba(0,242,254,0.1)', color: '#00f2fe', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600'
+                        }}>
+                          📄 View Uploaded Document {idx + 1}
+                        </a>
+                      ))}
+                      {!order.attachments && order.brief_file_url && (
+                        <a href={order.brief_file_url} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-block', padding: '8px 16px', background: 'rgba(0,242,254,0.1)', color: '#00f2fe', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600'
+                        }}>
+                          📄 View Uploaded Document
+                        </a>
+                      )}
+                    </div>
                   ) : (
                     <div>
                       <input 
