@@ -22,7 +22,7 @@ export default function OrdersPage() {
         .from('orders')
         .select('*')
         .eq('email', user.email)
-        .order('created_at', { ascending: false });
+        .order('timestamp', { ascending: false });
 
       if (data) setOrders(data);
       setLoading(false);

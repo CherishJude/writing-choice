@@ -53,7 +53,7 @@ export async function GET(req: Request) {
     // Fetch all required data using Admin Client to bypass RLS!
     const { data: userData } = await supabaseAdmin.from('members').select('*');
     const { data: msgData } = await supabaseAdmin.from('group_messages').select('*').order('timestamp', { ascending: false });
-    const { data: orderData } = await supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
+    const { data: orderData } = await supabaseAdmin.from('orders').select('*').order('timestamp', { ascending: false });
 
     return NextResponse.json({
       users: userData || [],

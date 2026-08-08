@@ -81,7 +81,7 @@ export default function AdminPage() {
         // Fallback to normal fetch in case they haven't set the key yet
         const { data: userData } = await supabase.from('members').select('*');
         const { data: msgData } = await supabase.from('group_messages').select('*').order('timestamp', { ascending: false });
-        const { data: orderData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        const { data: orderData } = await supabase.from('orders').select('*').order('timestamp', { ascending: false });
         
         if (userData) setUsers(userData);
         if (msgData) setMessages(msgData);
